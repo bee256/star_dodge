@@ -14,7 +14,6 @@ print(f"Screen w: {SCREEN_W}, h: {SCREEN_H}")
 # Set display mode to full-screen
 WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
-#BG = pygame.image.load("Python-Game-Dev-Intro-main/bg.jpeg")
 BG = pygame.transform.scale(pygame.image.load('assets/images/background.jpeg'), (SCREEN_W, SCREEN_H))
 
 PLAYER_W = int(SCREEN_W / 40)
@@ -30,8 +29,9 @@ TIME_FONT = pygame.font.SysFont('comicsans', PLAYER_H)
 LOST_FONT = pygame.font.SysFont('comicsans', PLAYER_H * 2)
 SOUND_CRASH = pygame.mixer.Sound("assets/sound/rubble_crash.wav")
 SOUND_HIT = pygame.mixer.Sound("assets/sound/metal_trash_can_filled_2.wav")
-SOUND_MUSIC = pygame.mixer.music.load("assets/sound/planetary_paths.mp3", 'planet_paths')
+pygame.mixer.music.load("assets/sound/planetary_paths.mp3", 'planet_paths')
 HITS_MAX = 3
+
 
 def draw(player, elapsed_time, stars, hits):
     WIN.blit(BG, (0, 0))
@@ -71,7 +71,6 @@ def main():
     clock = pygame.time.Clock()
     # print(f"Framerate: {clock.get_fps():.2f}")
     start_time = time.time()
-    elapsed_time = 0
 
     star_add_increment = 1500
     star_timer = 0
@@ -83,7 +82,7 @@ def main():
     pygame.mixer.music.play()
     pygame.mouse.set_visible(False)
 
-    clock_tick_num_calls = 0
+    # clock_tick_num_calls = 0
 
     while run:
         star_timer += clock.tick(60)
