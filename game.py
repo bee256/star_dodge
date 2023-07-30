@@ -2,13 +2,12 @@ import pygame
 import time
 import random
 pygame.font.init()
-import os
+# import os
 # from pygame.locals import *
 
 # os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 info_display = pygame.display.Info()
-SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
 SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
 print(f"Screen w: {SCREEN_W}, h: {SCREEN_H}")
 
