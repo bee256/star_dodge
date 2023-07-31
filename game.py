@@ -25,8 +25,8 @@ STAR_W = int(SCREEN_W / 150)
 STAR_H = int(SCREEN_H / 70)
 STAR_VEL = 8
 print(f"Star w: {STAR_W}, h: {STAR_H}")
-TIME_FONT = pygame.font.SysFont('comicsans', PLAYER_H)
-LOST_FONT = pygame.font.SysFont('comicsans', PLAYER_H * 2)
+TIME_FONT = pygame.font.Font('assets/fonts/StarJedi-DGRW.ttf', PLAYER_H)
+LOST_FONT = pygame.font.Font('assets/fonts/StarJedi-DGRW.ttf', PLAYER_H * 2)
 SOUND_CRASH = pygame.mixer.Sound("assets/sound/rubble_crash.wav")
 SOUND_HIT = pygame.mixer.Sound("assets/sound/metal_trash_can_filled_2.wav")
 pygame.mixer.music.load("assets/sound/planetary_paths.mp3", 'planet_paths')
@@ -52,10 +52,10 @@ def draw(player, elapsed_time, stars, hits):
     minutes = int(elapsed_time // 60)
     seconds = int(elapsed_time % 60)
     time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pygame.Color(0, 160, 255))
-    WIN.blit(time_text, (20, 20))
+    WIN.blit(time_text, (30, 10))
 
     hits_text = TIME_FONT.render(f"Hits: {hits}", 1, color)
-    WIN.blit(hits_text, (SCREEN_W - hits_text.get_width() - 20, 20))
+    WIN.blit(hits_text, (SCREEN_W - hits_text.get_width() - 30, 10))
 
     if hits >= 3:
         lost_text = LOST_FONT.render("Raumschiff am Arsch!", 1, pygame.Color(212, 0, 0))
@@ -67,7 +67,7 @@ def draw(player, elapsed_time, stars, hits):
 def main():
     # Run the game loop
     run = True
-    player = pygame.Rect(SCREEN_W / 2 + PLAYER_W / 2, SCREEN_H - PLAYER_H - PLAYER_OFFSET, PLAYER_W, PLAYER_H)
+    player = pygame.Rect(SCREEN_W / 2 - PLAYER_W / 2, SCREEN_H - PLAYER_H - PLAYER_OFFSET, PLAYER_W, PLAYER_H)
     clock = pygame.time.Clock()
     # print(f"Framerate: {clock.get_fps():.2f}")
     start_time = time.time()
