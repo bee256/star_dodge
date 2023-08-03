@@ -1,7 +1,7 @@
 import pygame
 import time
 import random
-# import os
+from os import path
 # from pygame.locals import *
 
 # os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -13,7 +13,7 @@ print(f"Screen w: {SCREEN_W}, h: {SCREEN_H}")
 
 # Set display mode to full-screen
 WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-BG = pygame.transform.scale(pygame.image.load('assets/images/background.jpeg'), (SCREEN_W, SCREEN_H))
+BG = pygame.transform.scale(pygame.image.load(path.join('assets', 'images', 'background.jpeg')), (SCREEN_W, SCREEN_H))
 
 FONT_SIZE_BASE = int(SCREEN_W / 40)
 PLAYER_VEL = 5
@@ -21,17 +21,17 @@ STAR_W = int(SCREEN_W / 150)
 STAR_H = int(SCREEN_H / 70)
 STAR_VEL = 8
 print(f"Star w: {STAR_W}, h: {STAR_H}")
-TIME_FONT = pygame.font.Font('assets/fonts/StarJedi-DGRW.ttf', FONT_SIZE_BASE)
-LOST_FONT = pygame.font.Font('assets/fonts/StarJedi-DGRW.ttf', FONT_SIZE_BASE * 2)
-SOUND_CRASH = pygame.mixer.Sound("assets/sound/rubble_crash.wav")
-SOUND_HIT = pygame.mixer.Sound("assets/sound/metal_trash_can_filled_2.wav")
-pygame.mixer.music.load("assets/sound/planetary_paths.mp3", 'planet_paths')
+TIME_FONT = pygame.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
+LOST_FONT = pygame.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
+SOUND_CRASH = pygame.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
+SOUND_HIT = pygame.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
+pygame.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
 HITS_MAX = 3
 
 
 class Ship():
     def __init__(self):
-        ship = pygame.image.load('assets/images/space_ship.png').convert_alpha()
+        ship = pygame.image.load(path.join('assets', 'images', 'space_ship.png')).convert_alpha()
         # create a dictionary which stores the ship images by color
         self.ship_by_color = {}
         # the graphics loaded has a ship in grey color with RGB(100,100,100) → create colorful ships by replacing gray
