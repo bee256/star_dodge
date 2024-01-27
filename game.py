@@ -156,9 +156,9 @@ def main():
         if keys[pygame.K_ESCAPE]:
             pygame.mixer.music.fadeout(1000)
             pygame.time.delay(1100)
-            break
+            break   # break out of while look do not draw anymore
 
-        for star in stars[:]:
+        for star in stars.copy():
             star.y += STAR_VEL
             if star.y > SCREEN_H:
                 stars.remove(star)
