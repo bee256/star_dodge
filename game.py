@@ -29,7 +29,7 @@ pygame.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'pl
 HITS_MAX = 3
 
 
-class Ship():
+class Ship:
     def __init__(self):
         ship = pygame.image.load(path.join('assets', 'images', 'space_ship.png')).convert_alpha()
         # create a dictionary which stores the ship images by color
@@ -48,7 +48,7 @@ class Ship():
         self.height = self.width * image_aspect
         offset = self.height / 2
 
-        # We scale each colorised image after the color replacement and not before because of the anti-aliasing with smoothscale
+        # We scale each colorised image after the color replacement and not before because of the anti-aliasing with smooth scale
         for col in color_set:
             self.ship_by_color[col] = pygame.transform.smoothscale(self.ship_by_color[col], (self.width, self.height))
 
@@ -163,7 +163,7 @@ def main():
             if star.y > SCREEN_H:
                 stars.remove(star)
             elif star.y + star.height >= ship.y:
-                if (ship.mask.overlap(star_mask, (star.x - ship.x, star.y - ship.y))):
+                if ship.mask.overlap(star_mask, (star.x - ship.x, star.y - ship.y)):
                     stars.remove(star)
                     is_hit = True
                     break
