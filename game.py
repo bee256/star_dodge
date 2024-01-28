@@ -7,20 +7,28 @@ from os import path
 # os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 pygame.font.init()
+# Work in windowed mode
+# WIN = pygame.display.set_mode((1200, 800))
+# Set display mode to full-screen
+WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
 info_display = pygame.display.Info()
 SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
 print(f"Screen w: {SCREEN_W}, h: {SCREEN_H}")
 
-# Set display mode to full-screen
-WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 BG = pygame.transform.scale(pygame.image.load(path.join('assets', 'images', 'background.jpeg')), (SCREEN_W, SCREEN_H))
 
 FONT_SIZE_BASE = int(SCREEN_W / 40)
-PLAYER_VEL = 5
+SHIP_VEL = 5
 STAR_W = int(SCREEN_W / 150)
 STAR_H = int(SCREEN_H / 70)
-STAR_VEL = 8
+STAR_VEL_MAX = 10
+STAR_VEL_MIN = 5
+STARS_CREATE_PER_INCREMENT = 4
 print(f"Star w: {STAR_W}, h: {STAR_H}")
+STAR_MASK = pygame.mask.Mask((STAR_W, STAR_H))
+STAR_MASK.fill()
+
 TIME_FONT = pygame.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
 LOST_FONT = pygame.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
 SOUND_CRASH = pygame.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
@@ -28,6 +36,28 @@ SOUND_HIT = pygame.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_fil
 pygame.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
 HITS_MAX = 3
 
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+
+# Additional Colors
+YELLOW = (255, 255, 0)
+CYAN = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+
+# Gray Shades
+GRAY = (128, 128, 128)
+LIGHT_GRAY = (192, 192, 192)
+DARK_GRAY = (64, 64, 64)
+
+# Custom Colors
+ORANGE = (255, 165, 0)
+PURPLE = (128, 0, 128)
+PINK = (255, 182, 193)
+
+STAR_COLOR_PALETTE = (WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, GRAY, LIGHT_GRAY, ORANGE, PURPLE, PINK)
 
 class Ship:
     def __init__(self):
@@ -66,6 +96,35 @@ class Ship:
             i = i + 1
 
 
+class Star:
+    def __init__(self):
+        star_x = random.randint(0, SCREEN_W - STAR_W)
+        self.star = pygame.Rect(star_x, -STAR_H, STAR_W, STAR_H)
+        self.color = STAR_COLOR_PALETTE[random.randint(0, len(STAR_COLOR_PALETTE) - 1)]
+        self.velocity = random.randint(STAR_VEL_MIN, STAR_VEL_MAX)
+
+    def draw(self):
+        pygame.draw.rect(WIN, self.color, self.star)
+
+    def move(self):
+        self.star.y += self.velocity
+
+    def is_off_screen(self):
+        if self.star.y > SCREEN_H:
+            return True
+        return False
+
+    def is_near_ship(self, ship):
+        if self.star.y + self.star.height >= ship.y:
+            return True
+        return False
+
+    def collides_with_ship(self, ship):
+        if ship.mask.overlap(STAR_MASK, (self.star.x - ship.x, self.star.y - ship.y)):
+            return True
+        return False
+
+
 def draw(ship, elapsed_time, stars, hits):
     WIN.blit(BG, (0, 0))
     # ship.draw_all_ships_for_test()
@@ -82,7 +141,7 @@ def draw(ship, elapsed_time, stars, hits):
     # WIN.blit(SHIP_G_MASK_IMAGE, (ship.x + PLAYER_W + 10, ship.y))
 
     for star in stars:
-        pygame.draw.rect(WIN, 'white', star)
+        star.draw()
 
     minutes = int(elapsed_time // 60)
     seconds = int(elapsed_time % 60)
@@ -111,22 +170,17 @@ def main():
     start_time = time.time()
 
     star_add_increment = 1500
-    star_timer = 0
+    star_create_timer = 0
 
     stars = []
-    star_mask = pygame.mask.Mask((STAR_W, STAR_H))
-    star_mask.fill()
-
     is_hit = False
     hits = 0
 
     pygame.mixer.music.play(loops=-1)
     pygame.mouse.set_visible(False)
 
-    # clock_tick_num_calls = 0
-
     while run:
-        star_timer += clock.tick(60)
+        star_create_timer += clock.tick(60)
         # clock_tick_num_calls += 1
         # if clock_tick_num_calls == 50:
         #     print(f"Framerate: {clock.get_fps():.2f}")
@@ -134,14 +188,13 @@ def main():
 
         elapsed_time = time.time() - start_time
 
-        if star_timer > star_add_increment:
-            for i in range(3):
-                star_x = random.randint(0, SCREEN_W - STAR_W)
-                star = pygame.Rect(star_x, -STAR_H, STAR_W, STAR_H)
+        if star_create_timer > star_add_increment:
+            for i in range(STARS_CREATE_PER_INCREMENT):
+                star = Star()
                 stars.append(star)
 
             star_add_increment = max(150, star_add_increment - 50)
-            star_timer = 0
+            star_create_timer = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -149,21 +202,21 @@ def main():
                 break
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and ship.x - PLAYER_VEL >= 0:
-            ship.x -= PLAYER_VEL
-        if keys[pygame.K_RIGHT] and ship.x + PLAYER_VEL + ship.width <= SCREEN_W:
-            ship.x += PLAYER_VEL
+        if keys[pygame.K_LEFT] and ship.x - SHIP_VEL >= 0:
+            ship.x -= SHIP_VEL
+        if keys[pygame.K_RIGHT] and ship.x + SHIP_VEL + ship.width <= SCREEN_W:
+            ship.x += SHIP_VEL
         if keys[pygame.K_ESCAPE]:
             pygame.mixer.music.fadeout(1000)
             pygame.time.delay(1100)
             break   # break out of while look do not draw anymore
 
         for star in stars.copy():
-            star.y += STAR_VEL
-            if star.y > SCREEN_H:
+            star.move()
+            if star.is_off_screen():
                 stars.remove(star)
-            elif star.y + star.height >= ship.y:
-                if ship.mask.overlap(star_mask, (star.x - ship.x, star.y - ship.y)):
+            elif star.is_near_ship(ship):
+                if star.collides_with_ship(ship):
                     stars.remove(star)
                     is_hit = True
                     break
@@ -179,7 +232,6 @@ def main():
                 run = False
 
         # print(f"Num stars: {len(stars)}", end=' ')
-
         draw(ship, elapsed_time, stars, hits)
 
     if is_hit:
