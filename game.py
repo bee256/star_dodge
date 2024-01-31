@@ -2,15 +2,16 @@ import pygame
 import time
 import random
 from os import path
+
 # from pygame.locals import *
 
 # os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 pygame.font.init()
 # Work in windowed mode
-# WIN = pygame.display.set_mode((1200, 800))
+WIN = pygame.display.set_mode((1200, 800))
 # Set display mode to full-screen
-WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+# WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 info_display = pygame.display.Info()
 SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
@@ -46,6 +47,7 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
+LIGHT_BLUE = (0, 160, 255)
 
 # Gray Shades
 GRAY = (128, 128, 128)
@@ -57,7 +59,8 @@ ORANGE = (255, 165, 0)
 PURPLE = (128, 0, 128)
 PINK = (255, 182, 193)
 
-STAR_COLOR_PALETTE = (WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, GRAY, LIGHT_GRAY, ORANGE, PURPLE, PINK)
+STAR_COLOR_PALETTE = (WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, LIGHT_BLUE, LIGHT_GRAY, ORANGE, PURPLE, PINK)
+
 
 class Ship:
     def __init__(self):
@@ -78,7 +81,7 @@ class Ship:
         self.height = self.width * image_aspect
         offset = self.height / 2
 
-        # We scale each colorised image after the color replacement and not before because of the anti-aliasing with smooth scale
+        # We scale each colored image after the color replacement and not before because of the antialiasing with smooth scale
         for col in color_set:
             self.ship_by_color[col] = pygame.transform.smoothscale(self.ship_by_color[col], (self.width, self.height))
 
@@ -125,6 +128,12 @@ class Star:
         return False
 
 
+def draw_paused():
+    paused_text = LOST_FONT.render("Paused!", 1, pygame.Color(LIGHT_BLUE))
+    WIN.blit(paused_text, (SCREEN_W / 2 - paused_text.get_width() / 2, SCREEN_H / 2 - paused_text.get_height() / 2))
+    pygame.display.update()
+
+
 def draw(ship, elapsed_time, stars, hits):
     WIN.blit(BG, (0, 0))
     # ship.draw_all_ships_for_test()
@@ -145,7 +154,7 @@ def draw(ship, elapsed_time, stars, hits):
 
     minutes = int(elapsed_time // 60)
     seconds = int(elapsed_time % 60)
-    time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pygame.Color(0, 160, 255))
+    time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pygame.Color(LIGHT_BLUE))
     WIN.blit(time_text, (30, 10))
 
     hits_text = TIME_FONT.render(f"Hits: {hits}", 1, color)
@@ -153,7 +162,7 @@ def draw(ship, elapsed_time, stars, hits):
 
     if hits >= 3:
         lost_text = LOST_FONT.render("Raumschiff am Arsch!", 1, pygame.Color(212, 0, 0))
-        WIN.blit(lost_text, (SCREEN_W/2 - lost_text.get_width()/2, SCREEN_H/2 - lost_text.get_height()/2))
+        WIN.blit(lost_text, (SCREEN_W / 2 - lost_text.get_width() / 2, SCREEN_H / 2 - lost_text.get_height() / 2))
 
     pygame.display.update()
 
@@ -161,9 +170,8 @@ def draw(ship, elapsed_time, stars, hits):
 def main():
     # Run the game loop
     run = True
-    # player = pygame.Rect(SCREEN_W / 2 - PLAYER_W / 2, SCREEN_H - PLAYER_H - PLAYER_OFFSET, PLAYER_W, PLAYER_H)
     ship = Ship()
-    print(f"Ship w: {ship.width}, h: {ship.height}")
+    print(f"Ship dimensions are w: {ship.width}, h: {ship.height}")
 
     clock = pygame.time.Clock()
     # print(f"Framerate: {clock.get_fps():.2f}")
@@ -175,6 +183,8 @@ def main():
     stars = []
     is_hit = False
     hits = 0
+    is_paused = False
+    pause_start = 0
 
     pygame.mixer.music.play(loops=-1)
     pygame.mouse.set_visible(False)
@@ -186,20 +196,33 @@ def main():
         #     print(f"Framerate: {clock.get_fps():.2f}")
         #     clock_tick_num_calls = 0
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                break
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    is_paused = not is_paused
+                    if is_paused:
+                        pause_start = time.time()
+                        draw_paused()
+                    else:
+                        start_time += time.time() - pause_start
+
+        if is_paused:
+            continue
+
         elapsed_time = time.time() - start_time
 
+        # game logic: every star_add_increment we create a bunch of stars
         if star_create_timer > star_add_increment:
             for i in range(STARS_CREATE_PER_INCREMENT):
                 star = Star()
                 stars.append(star)
 
+            # here we decrease star_add_increment, so that starts get created faster and faster, but not faster than a threshold
             star_add_increment = max(150, star_add_increment - 50)
             star_create_timer = 0
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and ship.x - SHIP_VEL >= 0:
@@ -209,7 +232,7 @@ def main():
         if keys[pygame.K_ESCAPE]:
             pygame.mixer.music.fadeout(1000)
             pygame.time.delay(1100)
-            break   # break out of while look do not draw anymore
+            break  # break out of while look do not draw anymore
 
         for star in stars.copy():
             star.move()
@@ -233,8 +256,10 @@ def main():
 
         # print(f"Num stars: {len(stars)}", end=' ')
         draw(ship, elapsed_time, stars, hits)
+    # end of game loop
 
     if is_hit:
+        # if we ended the loop with is hit it means that game is over
         pygame.time.delay(3000)
 
     pygame.quit()
