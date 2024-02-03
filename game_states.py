@@ -1,7 +1,6 @@
 import pygame as pg
 import time
 from os import path
-import sys
 
 from Ship import Ship
 from Star import Star

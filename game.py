@@ -2,9 +2,6 @@ import sys
 
 from game_states import *
 
-# from pygame.locals import *
-
-# os.environ['SDL_VIDEO_CENTERED'] = '1'
 pg.init()
 pg.font.init()
 arguments = sys.argv[1:]
@@ -13,7 +10,7 @@ if len(arguments) > 0 and arguments[0].find('window'):
     WIN = pg.display.set_mode((1200, 800))
 else:
     # Set display mode to full-screen
-    WIN = pg.display.set_mode((0, 0), pg.FULLSCREEN)    # pg.HWSURFACE | pg.DOUBLEBUF
+    WIN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 info_display = pg.display.Info()
 SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
@@ -31,12 +28,6 @@ SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
 SOUND_HIT = pg.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
 pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
 HITS_MAX = 3
-
-
-def draw_paused():
-    paused_text = LOST_FONT.render("Paused!", 1, pg.Color(LIGHT_BLUE))
-    WIN.blit(paused_text, (SCREEN_W / 2 - paused_text.get_width() / 2, SCREEN_H / 2 - paused_text.get_height() / 2))
-    pg.display.flip()
 
 
 def main():
