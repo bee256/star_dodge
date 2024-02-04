@@ -1,33 +1,19 @@
 import sys
-
-from game_states import *
+import pygame as pg
+from game_states import MenuState, QuitState
 
 pg.init()
 pg.font.init()
 arguments = sys.argv[1:]
 if len(arguments) > 0 and arguments[0].find('window'):
     # Work in windowed mode
-    WIN = pg.display.set_mode((1200, 800))
+    SCREEN = pg.display.set_mode((1200, 800))
 else:
-    # Set display mode to full-screen
-    WIN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+    # Set display mode to full screen
+    SCREEN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
-info_display = pg.display.Info()
-SCREEN_W, SCREEN_H = (info_display.current_w, info_display.current_h)
-print(f"Screen w: {SCREEN_W}, h: {SCREEN_H}")
-
-BG_IMG = pg.transform.scale(pg.image.load(path.join('assets', 'images', 'background.jpeg')), (SCREEN_W, SCREEN_H))
-
-FONT_SIZE_BASE = int(SCREEN_H / 25)
-SHIP_VEL = 5
-STARS_CREATE_PER_INCREMENT = 4
-
-TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
-LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
-SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
-SOUND_HIT = pg.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
-pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
-HITS_MAX = 3
+SCREEN_W, SCREEN_H = (SCREEN.get_width(), SCREEN.get_height())
+print(f"Screen size is w: {SCREEN_W}, h: {SCREEN_H}")
 
 
 def main():
@@ -40,7 +26,7 @@ def main():
     pg.mouse.set_visible(False)
 
     # Initial state
-    current_state = MenuState(WIN, running_game=None)
+    current_state = MenuState(SCREEN, running_game=None)
 
     while run:
         frame_time = clock.tick(60)
@@ -64,7 +50,6 @@ def main():
 
         current_state.render()
         pg.display.flip()
-
     # end of game loop
 
     pg.quit()

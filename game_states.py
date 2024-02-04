@@ -1,19 +1,29 @@
 import pygame as pg
 import time
 from os import path
+from typing import List
 
-from Ship import Ship
-from Star import Star
-from game import SCREEN_W, SCREEN_H, BG_IMG, TIME_FONT, LOST_FONT
+from ship import Ship
+from star import Star
 from colors import LIGHT_BLUE, GRAY, DARK_RED
+
+pg.init()
+pg.font.init()
 
 play_music = True
 play_sound = True
-MENU_KEYS = (pg.K_UP, pg.K_DOWN, pg.K_RETURN)
 MENU_SOUND_MOVE = pg.mixer.Sound(path.join('assets', 'sound', 'menu-move.wav'))
 MENU_SOUND_SELECT = pg.mixer.Sound(path.join('assets', 'sound', 'menu-select.wav'))
 
-# Define your game states
+BG_IMG: pg.Surface
+FONT_SIZE_BASE: int
+TIME_FONT: pg.font.Font
+LOST_FONT: pg.font.Font
+LOST_TEXT: pg.Surface
+MENU_TEXT: pg.Surface
+is_initialised = False
+
+
 class State:
     def __init__(self):
         pass
@@ -26,11 +36,22 @@ class State:
 
 
 class MenuState(State):
-    FONT = pg.font.Font(None, 36)
     menu_options = ['Play Game', 'Level: Normal', 'Sound: on', 'Music: on', 'Exit']
 
-    def __init__(self, screen, running_game):
+    def __init__(self, screen: pg.Surface, running_game):
         self.screen = screen
+
+        global is_initialised, BG_IMG, FONT_SIZE_BASE, TIME_FONT, LOST_FONT, LOST_TEXT, MENU_TEXT
+        if not is_initialised:
+            BG_IMG = pg.transform.scale(pg.image.load(path.join('assets', 'images', 'background.jpeg')),
+                                        (screen.get_width(), screen.get_height()))
+            FONT_SIZE_BASE = int(screen.get_height() / 25)
+            TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
+            LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
+            LOST_TEXT = LOST_FONT.render("Raumschiff am Arsch!", 1, DARK_RED)
+            MENU_TEXT = LOST_FONT.render("Star Dodge", 1, LIGHT_BLUE)
+            is_initialised = True
+
         self.running_game = running_game
         if self.running_game:
             MenuState.menu_options[0] = 'Resume Game'
@@ -41,7 +62,7 @@ class MenuState(State):
             MenuState.menu_options.remove('New Game')
         self.current_option = 0
 
-    def handle_events(self, events, frame_time):
+    def handle_events(self, events: List[pg.event.Event], frame_time):
         for event in events:
             if not event.type == pg.KEYDOWN:
                 continue
@@ -98,11 +119,10 @@ class MenuState(State):
 
     def render(self):
         self.screen.blit(BG_IMG, (0, 0))
-        self.screen.blit(MENU_TEXT, (SCREEN_W / 2 - MENU_TEXT.get_width() / 2, SCREEN_H / 5))
+        self.screen.blit(MENU_TEXT, (self.screen.get_width() / 2 - MENU_TEXT.get_width() / 2, self.screen.get_height() / 5))
 
         for i, option in enumerate(MenuState.menu_options):
             if i == self.current_option:
-                # label = MenuState.FONT.render(option, True, LIGHT_BLUE)
                 label = TIME_FONT.render(option, True, LIGHT_BLUE)
             else:
                 label = TIME_FONT.render(option, True, GRAY)
@@ -113,19 +133,15 @@ class MenuState(State):
             self.screen.blit(label, (pos_x, pos_y))
 
 
-SHIP_VEL = 5
 STARS_CREATE_PER_INCREMENT = 4
-FONT_SIZE_BASE = 0
 SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
 SOUND_HIT = pg.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
 pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
 HITS_MAX = 3
-LOST_TEXT = LOST_FONT.render("Raumschiff am Arsch!", 1, DARK_RED)
-MENU_TEXT = LOST_FONT.render("Star Dodge", 1, LIGHT_BLUE)
 
 
 class GameState(State):
-    def __init__(self, screen):
+    def __init__(self, screen: pg.Surface):
         self.screen = screen
         self.star_create_timer = 0
         self.start_time = time.time()
@@ -135,16 +151,17 @@ class GameState(State):
         self.hits = 0
         print(f"Ship dimensions are w: {self.ship.width}, h: {self.ship.height}")
         self.stars = []
+        Star.initialise(screen)
         if play_music:
             pg.mixer.music.play(loops=-1)
         self.pause_start = 0
 
     def handle_events(self, events, frame_time):
         keys = pg.key.get_pressed()
-        if keys[pg.K_LEFT] and self.ship.x - SHIP_VEL >= 0:
-            self.ship.x -= SHIP_VEL
-        if keys[pg.K_RIGHT] and self.ship.x + SHIP_VEL + self.ship.width <= SCREEN_W:
-            self.ship.x += SHIP_VEL
+        if keys[pg.K_LEFT]:
+            self.ship.move_left()
+        if keys[pg.K_RIGHT]:
+            self.ship.move_right()
         if keys[pg.K_ESCAPE]:
             pg.mixer.music.pause()
             self.pause_start = time.time()
@@ -155,7 +172,7 @@ class GameState(State):
         # game logic: every star_add_increment we create a bunch of stars
         if self.star_create_timer > self.star_add_increment:
             for _ in range(STARS_CREATE_PER_INCREMENT):
-                star = Star(self.screen)
+                star = Star()
                 self.stars.append(star)
 
             # here we decrease star_add_increment, so that starts get created faster and faster, but not faster than a threshold
@@ -208,11 +225,11 @@ class GameState(State):
         time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
         self.screen.blit(time_text, (30, 10))
         hits_text = TIME_FONT.render(f"Hits: {self.hits}", 1, self.get_color_by_hits())
-        self.screen.blit(hits_text, (SCREEN_W - hits_text.get_width() - 30, 10))
+        self.screen.blit(hits_text, (self.screen.get_width() - hits_text.get_width() - 30, 10))
 
-        # if self.hits >= 3:
-        #     lost_text = LOST_FONT.render("Raumschiff am Arsch!", 1, pg.Color(212, 0, 0))
-        #     self.screen.blit(lost_text, (SCREEN_W / 2 - lost_text.get_width() / 2, SCREEN_H / 2 - lost_text.get_height() / 2))
+        if self.hits >= 3:
+            self.screen.blit(LOST_TEXT, (
+                self.screen.get_width() / 2 - LOST_TEXT.get_width() / 2, self.screen.get_height() / 2 - LOST_TEXT.get_height() / 2))
 
     def get_color_by_hits(self):
         color = 'green'

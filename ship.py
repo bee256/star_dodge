@@ -1,11 +1,11 @@
 import pygame as pg
 from os import path
 
-from game import SCREEN_W, SCREEN_H
+SHIP_VEL = 5
 
 
 class Ship:
-    def __init__(self, screen):
+    def __init__(self, screen: pg.Surface):
         self.screen = screen
         ship = pg.image.load(path.join('assets', 'images', 'space_ship.png')).convert_alpha()
         # create a dictionary which stores the ship images by color
@@ -20,7 +20,7 @@ class Ship:
             pixel_array.replace(old_color, new_color)
 
         image_aspect = ship.get_height() / ship.get_width()
-        self.width = int(SCREEN_W / 28)
+        self.width = int(screen.get_width() / 28)
         self.height = self.width * image_aspect
         offset = self.height / 2
 
@@ -29,11 +29,19 @@ class Ship:
             self.ship_by_color[col] = pg.transform.smoothscale(self.ship_by_color[col], (self.width, self.height))
 
         self.mask = pg.mask.from_surface(self.ship_by_color['green'])
-        self.x = int(SCREEN_W / 2 - self.width / 2)
-        self.y = int(SCREEN_H - self.height - offset)
+        self.x = int(screen.get_width() / 2 - self.width / 2)
+        self.y = int(screen.get_height() - self.height - offset)
 
     def draw(self, color: str):
         self.screen.blit(self.ship_by_color[color], (self.x, self.y))
+
+    def move_left(self):
+        if self.x - SHIP_VEL >= 0:
+            self.x -= SHIP_VEL
+
+    def move_right(self):
+        if self.x + SHIP_VEL + self.width <= self.screen.get_width():
+            self.x += SHIP_VEL
 
     def draw_all_ships_for_test(self):
         i = 0
