@@ -77,7 +77,10 @@ class MenuState(State):
             elif event.key == pg.K_RETURN:
                 return_value = self.__handle_menu_selection(MenuState.menu_options[self.current_option])
                 if play_sound:
-                    pg.mixer.Sound.play(MENU_SOUND_SELECT)
+                    if 'Game' not in MenuState.menu_options[self.current_option]:
+                        pg.mixer.Sound.play(MENU_SOUND_SELECT)
+                    elif not play_music:
+                        pg.mixer.Sound.play(MENU_SOUND_SELECT)
                 if return_value:
                     return return_value
 
