@@ -48,7 +48,7 @@ class MenuState(State):
             FONT_SIZE_BASE = int(screen.get_height() / 25)
             TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
             LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
-            LOST_TEXT = LOST_FONT.render("Raumschiff am Arsch!", 1, DARK_RED)
+            LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
             MENU_TEXT = LOST_FONT.render("Star Dodge", 1, LIGHT_BLUE)
             is_initialised = True
 
