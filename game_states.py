@@ -2,6 +2,7 @@ import pygame as pg
 import time
 from os import path
 from typing import List
+from enum import Enum
 
 from ship import Ship
 from star import Star
@@ -24,7 +25,16 @@ MENU_TEXT: pg.Surface
 is_initialised = False
 
 
+class Difficulty(Enum):
+    EASY = 1
+    NORMAL = 2
+    HARD = 3
+
+
 class State:
+    difficulty: Difficulty
+    difficulty = Difficulty.NORMAL
+
     def __init__(self):
         pass
 
@@ -39,6 +49,7 @@ class MenuState(State):
     menu_options = ['Play Game', 'Level: Normal', 'Sound: on', 'Music: on', 'Exit']
 
     def __init__(self, screen: pg.Surface, running_game):
+        super().__init__()
         self.screen = screen
 
         global is_initialised, BG_IMG, FONT_SIZE_BASE, TIME_FONT, LOST_FONT, LOST_TEXT, MENU_TEXT
@@ -90,10 +101,13 @@ class MenuState(State):
         if selected_option.startswith('Level'):
             if selected_option.endswith('Easy'):
                 MenuState.menu_options[self.current_option] = 'Level: Normal'
+                State.difficulty = Difficulty.NORMAL
             elif selected_option.endswith('Normal'):
                 MenuState.menu_options[self.current_option] = 'Level: Hard'
+                State.difficulty = Difficulty.HARD
             else:
                 MenuState.menu_options[self.current_option] = 'Level: Easy'
+                State.difficulty = Difficulty.EASY
             return None
         elif selected_option == 'Play Game' or selected_option == 'New Game':
             return GameState(self.screen)  # new game
@@ -136,7 +150,6 @@ class MenuState(State):
             self.screen.blit(label, (pos_x, pos_y))
 
 
-STARS_CREATE_PER_INCREMENT = 4
 SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
 SOUND_HIT = pg.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
 pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
@@ -145,6 +158,7 @@ HITS_MAX = 3
 
 class GameState(State):
     def __init__(self, screen: pg.Surface):
+        super().__init__()
         self.screen = screen
         self.star_create_timer = 0
         self.start_time = time.time()
@@ -157,6 +171,12 @@ class GameState(State):
         if play_music:
             pg.mixer.music.play(loops=-1)
         self.pause_start = 0
+        if State.difficulty == Difficulty.EASY:
+            self.stars_create_per_increment = 3
+        elif State.difficulty == Difficulty.HARD:
+            self.stars_create_per_increment = 5
+        else:   # Normal state
+            self.stars_create_per_increment = 4
 
     def handle_events(self, events, frame_time):
         keys = pg.key.get_pressed()
@@ -173,7 +193,7 @@ class GameState(State):
 
         # game logic: every star_add_increment we create a bunch of stars
         if self.star_create_timer > self.star_add_increment:
-            for _ in range(STARS_CREATE_PER_INCREMENT):
+            for _ in range(self.stars_create_per_increment):
                 star = Star()
                 self.stars.append(star)
 
@@ -246,4 +266,4 @@ class GameState(State):
 
 class QuitState(State):
     def __init__(self):
-        pass
+        super().__init__()
