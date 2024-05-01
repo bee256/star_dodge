@@ -152,7 +152,6 @@ class GameState(State):
         self.start_time = time.time()
         self.ship = Ship(screen)
         self.hits = 0
-        print(f"Ship dimensions are w: {self.ship.width}, h: {self.ship.height}")
         self.stars = []
         Star.initialise(screen)
         if play_music:
