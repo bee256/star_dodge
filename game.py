@@ -26,7 +26,8 @@ def main():
     pg.mouse.set_visible(False)
 
     # Initial state
-    current_state = MenuState(SCREEN, running_game=None)
+    MenuState.initialise(SCREEN)
+    current_state = MenuState(running_game=None)
 
     while run:
         frame_time = clock.tick(60)

@@ -16,13 +16,13 @@ play_sound = True
 MENU_SOUND_MOVE = pg.mixer.Sound(path.join('assets', 'sound', 'menu-move.wav'))
 MENU_SOUND_SELECT = pg.mixer.Sound(path.join('assets', 'sound', 'menu-select.wav'))
 
+SCREEN: pg.Surface
 BG_IMG: pg.Surface
 FONT_SIZE_BASE: int
 TIME_FONT: pg.font.Font
 LOST_FONT: pg.font.Font
 LOST_TEXT: pg.Surface
 MENU_TEXT: pg.Surface
-is_initialised = False
 
 
 class Difficulty(Enum):
@@ -32,11 +32,27 @@ class Difficulty(Enum):
 
 
 class State:
+    _class_is_initialised = False
+
     difficulty: Difficulty
     difficulty = Difficulty.NORMAL
 
+    @staticmethod
+    def initialise(screen: pg.Surface):
+        global SCREEN, BG_IMG, FONT_SIZE_BASE, TIME_FONT, LOST_FONT, LOST_TEXT, MENU_TEXT
+        SCREEN = screen
+        BG_IMG = pg.transform.scale(pg.image.load(path.join('assets', 'images', 'background.jpeg')),
+                                    (SCREEN.get_width(), SCREEN.get_height()))
+        FONT_SIZE_BASE = int(SCREEN.get_height() / 25)
+        TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
+        LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
+        LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
+        MENU_TEXT = LOST_FONT.render("Star Dodge", 1, LIGHT_BLUE)
+        State._class_is_initialised = True
+
     def __init__(self):
-        pass
+        if not State._class_is_initialised:
+            raise ValueError("Class is not initialized. Call State.initialise() first.")
 
     def handle_events(self, events, frame_time):
         pass
@@ -48,20 +64,8 @@ class State:
 class MenuState(State):
     menu_options = ['Play Game', 'Level: Normal', 'Sound: on', 'Music: on', 'Exit']
 
-    def __init__(self, screen: pg.Surface, running_game):
+    def __init__(self, running_game):
         super().__init__()
-        self.screen = screen
-
-        global is_initialised, BG_IMG, FONT_SIZE_BASE, TIME_FONT, LOST_FONT, LOST_TEXT, MENU_TEXT
-        if not is_initialised:
-            BG_IMG = pg.transform.scale(pg.image.load(path.join('assets', 'images', 'background.jpeg')),
-                                        (screen.get_width(), screen.get_height()))
-            FONT_SIZE_BASE = int(screen.get_height() / 25)
-            TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE)
-            LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), FONT_SIZE_BASE * 2)
-            LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
-            MENU_TEXT = LOST_FONT.render("Star Dodge", 1, LIGHT_BLUE)
-            is_initialised = True
 
         self.running_game = running_game
         if self.running_game:
@@ -110,7 +114,7 @@ class MenuState(State):
                 State.difficulty = Difficulty.EASY
             return None
         elif selected_option == 'Play Game' or selected_option == 'New Game':
-            return GameState(self.screen)  # new game
+            return GameState()  # new game
         elif selected_option == 'Resume Game':
             if play_music:
                 pg.mixer.music.unpause()
@@ -135,8 +139,8 @@ class MenuState(State):
                 play_sound = True
 
     def render(self):
-        self.screen.blit(BG_IMG, (0, 0))
-        self.screen.blit(MENU_TEXT, (self.screen.get_width() / 2 - MENU_TEXT.get_width() / 2, self.screen.get_height() / 5))
+        SCREEN.blit(BG_IMG, (0, 0))
+        SCREEN.blit(MENU_TEXT, (SCREEN.get_width() / 2 - MENU_TEXT.get_width() / 2, SCREEN.get_height() / 5))
 
         for i, option in enumerate(MenuState.menu_options):
             if i == self.current_option:
@@ -145,9 +149,9 @@ class MenuState(State):
                 label = TIME_FONT.render(option, True, GRAY)
             width = label.get_width()
             height = label.get_height()
-            pos_x = (self.screen.get_width() / 2) - (width / 2)
-            pos_y = (self.screen.get_height() / 2) - (height / 2) + (i * height * 1.2)
-            self.screen.blit(label, (pos_x, pos_y))
+            pos_x = (SCREEN.get_width() / 2) - (width / 2)
+            pos_y = (SCREEN.get_height() / 2) - (height / 2) + (i * height * 1.2)
+            SCREEN.blit(label, (pos_x, pos_y))
 
 
 SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
@@ -157,17 +161,16 @@ HITS_MAX = 3
 
 
 class GameState(State):
-    def __init__(self, screen: pg.Surface):
+    def __init__(self):
         super().__init__()
-        self.screen = screen
         self.star_create_timer = 0
         self.start_time = time.time()
         self.star_add_increment = 1500
         self.start_time = time.time()
-        self.ship = Ship(screen)
+        self.ship = Ship(SCREEN)
         self.hits = 0
         self.stars = []
-        Star.initialise(screen)
+        Star.initialise(SCREEN)
         if play_music:
             pg.mixer.music.play(loops=-1)
         self.pause_start = 0
@@ -187,7 +190,7 @@ class GameState(State):
         if keys[pg.K_ESCAPE]:
             pg.mixer.music.pause()
             self.pause_start = time.time()
-            return MenuState(self.screen, self)
+            return MenuState(self)
 
         self.star_create_timer += frame_time
 
@@ -226,7 +229,7 @@ class GameState(State):
             pg.display.flip()
             pg.mixer.music.fadeout(2500)
             pg.time.delay(2000)
-            return MenuState(self.screen, None)
+            return MenuState(None)
 
     def render(self):
         elapsed_time = time.time() - self.start_time
@@ -234,7 +237,7 @@ class GameState(State):
             self.start_time += time.time() - self.pause_start
             self.pause_start = 0
 
-        self.screen.blit(BG_IMG, (0, 0))
+        SCREEN.blit(BG_IMG, (0, 0))
         # self.ship.draw_all_ships_for_test()
 
         self.ship.draw(self.get_color_by_hits())
@@ -245,13 +248,13 @@ class GameState(State):
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
-        self.screen.blit(time_text, (30, 10))
+        SCREEN.blit(time_text, (30, 10))
         hits_text = TIME_FONT.render(f"Hits: {self.hits}", 1, self.get_color_by_hits())
-        self.screen.blit(hits_text, (self.screen.get_width() - hits_text.get_width() - 30, 10))
+        SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - 30, 10))
 
         if self.hits >= 3:
-            self.screen.blit(LOST_TEXT, (
-                self.screen.get_width() / 2 - LOST_TEXT.get_width() / 2, self.screen.get_height() / 2 - LOST_TEXT.get_height() / 2))
+            SCREEN.blit(LOST_TEXT, (
+                SCREEN.get_width() / 2 - LOST_TEXT.get_width() / 2, SCREEN.get_height() / 2 - LOST_TEXT.get_height() / 2))
 
     def get_color_by_hits(self):
         color = 'green'
