@@ -5,7 +5,7 @@ from game_states import MenuState, QuitState
 pg.init()
 pg.font.init()
 arguments = sys.argv[1:]
-if len(arguments) > 0 and arguments[0].find('window'):
+if len(arguments) > 0 and arguments[0].find('window') >= 0:
     # Work in windowed mode
     SCREEN = pg.display.set_mode((1200, 800))
 else:
