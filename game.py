@@ -1,6 +1,7 @@
 import sys
 import pygame as pg
-from game_states import MenuState, QuitState
+from states.menu_state import MenuState
+from states.quit_state import QuitState
 
 pg.init()
 pg.font.init()
@@ -25,9 +26,9 @@ def main():
 
     pg.mouse.set_visible(False)
 
-    # Initial state
+    # Initial game state is showing the menu
     MenuState.initialise(SCREEN)
-    current_state = MenuState(running_game=None)
+    current_state = MenuState()
 
     while run:
         frame_time = clock.tick(60)

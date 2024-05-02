@@ -15,6 +15,7 @@ SCREEN: pg.Surface
 
 class Star:
     _class_is_initialised = False
+
     @staticmethod
     def initialise(screen: pg.Surface):
         global SCREEN, STAR_W, STAR_H, STAR_MASK
