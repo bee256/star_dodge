@@ -1,7 +1,7 @@
 import pygame as pg
 import random
 
-from colors import *
+from utils.colors import *
 
 is_initialised = False
 STAR_W: int

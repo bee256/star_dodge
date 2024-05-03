@@ -2,8 +2,9 @@ import pygame as pg
 from os import path
 from enum import Enum
 
+from utils.paths import dir_images, dir_sound
+
 pg.init()
-pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
 
 
 class Difficulty(Enum):
@@ -27,7 +28,8 @@ class State:
         if State._class_is_initialised:
             return
 
-        State._background_img = pg.transform.scale(pg.image.load(path.join('assets', 'images', 'background.jpeg')),
+        pg.mixer.music.load(path.join(dir_sound, 'planetary_paths.mp3'), 'planet_paths')
+        State._background_img = pg.transform.scale(pg.image.load(path.join(dir_images, 'background.jpeg')),
                                                    (screen.get_width(), screen.get_height()))
         State._font_size_base = int(screen.get_height() / 25)
         State._class_is_initialised = True

@@ -5,13 +5,14 @@ from typing import List
 from states.state import State, Difficulty
 from states.game_state import GameState
 from states.quit_state import QuitState
-from colors import LIGHT_BLUE, GRAY
+from utils.colors import LIGHT_BLUE, GRAY
+from utils.paths import dir_sound, dir_fonts
 
 pg.init()
 pg.font.init()
 
-MENU_SOUND_MOVE = pg.mixer.Sound(path.join('assets', 'sound', 'menu-move.wav'))
-MENU_SOUND_SELECT = pg.mixer.Sound(path.join('assets', 'sound', 'menu-select.wav'))
+MENU_SOUND_MOVE: pg.mixer.Sound
+MENU_SOUND_SELECT: pg.mixer.Sound
 
 SCREEN: pg.Surface
 
@@ -34,11 +35,13 @@ class MenuState(State):
         MenuState._background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
 
-        global SCREEN
+        global SCREEN, MENU_SOUND_MOVE, MENU_SOUND_SELECT
         SCREEN = screen
-        MenuState._menu_font = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), font_size_base)
-        MenuState._menu_title_font = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), font_size_base * 2)
+        MenuState._menu_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base)
+        MenuState._menu_title_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base * 2)
         MenuState._menu_title = MenuState._menu_title_font.render("Star Dodge", 1, LIGHT_BLUE)
+        MENU_SOUND_MOVE = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
+        MENU_SOUND_SELECT = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
 
         MenuState._class_is_initialised = True
 

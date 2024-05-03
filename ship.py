@@ -1,6 +1,8 @@
 import pygame as pg
 from os import path
 
+from utils.paths import dir_images
+
 
 class Ship:
     """
@@ -22,7 +24,7 @@ class Ship:
     """
     def __init__(self, screen: pg.Surface):
         self.screen = screen
-        ship_img = pg.image.load(path.join('assets', 'images', 'space_ship.png'))
+        ship_img = pg.image.load(path.join(dir_images, 'space_ship.png'))
         # create a dictionary which stores the ship images by color
         self.ship_by_color = {}
         # the graphics loaded has a ship in grey color with RGB(100,100,100) → create colorful ships by replacing gray

@@ -5,7 +5,9 @@ from os import path
 from states.state import State, Difficulty
 from ship import Ship
 from star import Star
-from colors import LIGHT_BLUE, DARK_RED
+from utils.colors import LIGHT_BLUE, DARK_RED
+from utils.paths import dir_sound, dir_fonts
+
 
 pg.init()
 pg.font.init()
@@ -15,10 +17,8 @@ TIME_FONT: pg.font.Font
 LOST_FONT: pg.font.Font
 LOST_TEXT: pg.Surface
 
-SOUND_CRASH = pg.mixer.Sound(path.join('assets', 'sound', 'rubble_crash.wav'))
-SOUND_HIT = pg.mixer.Sound(path.join('assets', 'sound', 'metal_trash_can_filled_2.wav'))
-pg.mixer.music.load(path.join('assets', 'sound', 'planetary_paths.mp3'), 'planet_paths')
-HITS_MAX = 3
+SOUND_CRASH: pg.mixer.Sound
+SOUND_HIT: pg.mixer.Sound
 
 
 class GameState(State):
@@ -33,11 +33,13 @@ class GameState(State):
         State.initialise(screen)
         _background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
-        global SCREEN, TIME_FONT, LOST_FONT, LOST_TEXT
+        global SCREEN, TIME_FONT, LOST_FONT, LOST_TEXT, SOUND_CRASH, SOUND_HIT
         SCREEN = screen
-        TIME_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), font_size_base)
-        LOST_FONT = pg.font.Font(path.join('assets', 'fonts', 'StarJedi-DGRW.ttf'), font_size_base * 2)
+        TIME_FONT = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base)
+        LOST_FONT = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base * 2)
         LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
+        SOUND_CRASH = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
+        SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
         GameState._class_is_initialised = True
 
     def __init__(self, menu_state):
