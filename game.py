@@ -22,8 +22,6 @@ def main():
     run = True
 
     clock = pg.time.Clock()
-    # print(f"Framerate: {clock.get_fps():.2f}")
-
     pg.mouse.set_visible(False)
 
     # Initial game state is showing the menu

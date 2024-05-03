@@ -3,22 +3,39 @@ from os import path
 
 
 class Ship:
+    """
+    This class creates a ship from a graphic file, scales according to the size of the surface it shall be drawn on,
+    animates the ship and draws it.
+
+    Attributes:
+        screen (pygame.Surface): Surface where the ship is drawn on
+        width (float): width of the ship
+        height (float): height of the ship
+        mask (pygame.mask): The mask of the ship (taken from the image) for collision detection
+        x (int): x coordinate of the ship's surrounding rectangle
+        y (int): y coordinate of the ship's surrounding rectangle
+
+    Methods:
+        draw(): draw on screen
+        move_left(): move the ship to the left (will not move off-screen)
+        move_right(): move the ship to the right (will not move off-screen)
+    """
     def __init__(self, screen: pg.Surface):
         self.screen = screen
-        ship = pg.image.load(path.join('assets', 'images', 'space_ship.png'))
+        ship_img = pg.image.load(path.join('assets', 'images', 'space_ship.png'))
         # create a dictionary which stores the ship images by color
         self.ship_by_color = {}
         # the graphics loaded has a ship in grey color with RGB(100,100,100) → create colorful ships by replacing gray
-        old_color = pg.color.Color(100, 100, 100)
+        orig_color = pg.color.Color(100, 100, 100)
         color_set = ('green', 'yellow', 'orange', 'red')
         for col in color_set:
-            self.ship_by_color[col] = ship.copy()
+            self.ship_by_color[col] = ship_img.copy()
             new_color = pg.color.Color(col)
             pixel_array = pg.PixelArray(self.ship_by_color[col])
-            pixel_array.replace(old_color, new_color)
+            pixel_array.replace(orig_color, new_color)
 
         # calculate aspect ratio
-        image_aspect = ship.get_height() / ship.get_width()
+        image_aspect = ship_img.get_height() / ship_img.get_width()
         # use a reasonable width in relation so screen
         self.width = round(screen.get_width() / 28)
         # height is then derived using the aspect ratio
