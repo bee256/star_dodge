@@ -2,6 +2,7 @@ import pygame as pg
 from os import path
 from typing import List
 
+from states.set_player_state import SetPlayerState
 from states.state import State, Difficulty
 from states.game_state import GameState
 from states.quit_state import QuitState
@@ -32,6 +33,7 @@ class MenuState(State):
 
         State.initialise(screen)
         GameState.initialise(screen)
+        SetPlayerState.initialise(screen)
         MenuState._background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
 
@@ -98,6 +100,8 @@ class MenuState(State):
                 State.difficulty = Difficulty.EASY
             return None
         elif selected_option == 'Play Game' or selected_option == 'New Game':
+            if not State.player_name:
+                return SetPlayerState(self)
             return GameState(self)  # new game
         elif selected_option == 'Resume Game':
             if State.play_music:

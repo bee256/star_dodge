@@ -19,6 +19,7 @@ class State:
     _font_size_base: int
     play_music = True
     play_sound = True
+    player_name = None
 
     difficulty: Difficulty
     difficulty = Difficulty.NORMAL
@@ -31,7 +32,7 @@ class State:
         pg.mixer.music.load(path.join(dir_sound, 'planetary_paths.mp3'), 'planet_paths')
         State._background_img = pg.transform.scale(pg.image.load(path.join(dir_images, 'background.jpeg')),
                                                    (screen.get_width(), screen.get_height()))
-        State._font_size_base = int(screen.get_height() / 25)
+        State._font_size_base = round(screen.get_height() / 36)
         State._class_is_initialised = True
 
     @staticmethod

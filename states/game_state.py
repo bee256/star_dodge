@@ -42,7 +42,7 @@ class GameState(State):
         SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
         GameState._class_is_initialised = True
 
-    def __init__(self, menu_state):
+    def __init__(self, menu_state: State):
         if not GameState._class_is_initialised:
             raise ValueError("Class is not initialized. Call GameState.initialise() first.")
 

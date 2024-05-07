@@ -8,7 +8,7 @@ pg.font.init()
 arguments = sys.argv[1:]
 if len(arguments) > 0 and arguments[0].find('window') >= 0:
     # Work in windowed mode
-    SCREEN = pg.display.set_mode((1200, 800))
+    SCREEN = pg.display.set_mode((1600, 1000))
 else:
     # Set display mode to full screen
     SCREEN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
