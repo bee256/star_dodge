@@ -31,7 +31,7 @@ def main():
     while run:
         frame_time = clock.tick(60)
         # clock_tick_num_calls += 1
-        # if clock_tick_num_calls == 50:
+        # if clock_tick_num_calls == 300:   # print frame rate every 5 seconds
         #     print(f"Framerate: {clock.get_fps():.2f}")
         #     clock_tick_num_calls = 0
 

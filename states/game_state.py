@@ -3,8 +3,8 @@ import time
 from os import path
 
 from states.state import State, Difficulty
-from ship import Ship
-from star import Star
+from elements.ship import Ship
+from elements.star import Star
 from utils.colors import LIGHT_BLUE, DARK_RED
 from utils.paths import dir_sound, dir_fonts
 
@@ -42,7 +42,7 @@ class GameState(State):
         SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
         GameState._class_is_initialised = True
 
-    def __init__(self, menu_state):
+    def __init__(self, menu_state: State):
         if not GameState._class_is_initialised:
             raise ValueError("Class is not initialized. Call GameState.initialise() first.")
 
@@ -72,11 +72,12 @@ class GameState(State):
             self.ship.move_left()
         if keys[pg.K_RIGHT]:
             self.ship.move_right()
-        if keys[pg.K_ESCAPE]:
+        if keys[pg.K_ESCAPE] or keys[pg.K_SPACE]:
             pg.mixer.music.pause()
             self.pause_start = time.time()
             # return in pause mode
-            return self.menu_state.set_running_game(self)
+            self.menu_state.set_running_game(self)
+            return self.menu_state
 
         self.star_create_timer += frame_time
 
@@ -115,8 +116,9 @@ class GameState(State):
             pg.display.flip()
             pg.mixer.music.fadeout(2500)
             pg.time.delay(2000)
-            # return but no current running game as it is over
-            return self.menu_state.set_running_game(None)
+            # return to MenuState but no current running game as it is over
+            self.menu_state.set_running_game(None)
+            return self.menu_state
 
     def render(self):
         elapsed_time = time.time() - self.start_time
