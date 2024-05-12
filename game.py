@@ -13,8 +13,7 @@ else:
     # Set display mode to full screen
     SCREEN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
-SCREEN_W, SCREEN_H = (SCREEN.get_width(), SCREEN.get_height())
-print(f"Screen size is w: {SCREEN_W}, h: {SCREEN_H}")
+print(f"Screen size is w: {SCREEN.get_width()}, h: {SCREEN.get_height()}")
 
 
 def main():

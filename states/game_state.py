@@ -5,6 +5,7 @@ from os import path
 from states.state import State, Difficulty
 from elements.ship import Ship
 from elements.star import Star
+from elements.explosion import Explosion
 from utils.colors import LIGHT_BLUE, DARK_RED
 from utils.paths import dir_sound, dir_fonts
 
@@ -24,6 +25,7 @@ SOUND_HIT: pg.mixer.Sound
 class GameState(State):
     _class_is_initialised = False
     _background_img: pg.Surface
+    _game_over_wait_time_secs = 3
 
     @staticmethod
     def initialise(screen: pg.Surface):
@@ -44,7 +46,7 @@ class GameState(State):
 
     def __init__(self, menu_state: State):
         if not GameState._class_is_initialised:
-            raise ValueError("Class is not initialized. Call GameState.initialise() first.")
+            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
 
         super().__init__()
         self.menu_state = menu_state
@@ -54,8 +56,11 @@ class GameState(State):
         self.start_time = time.time()
         self.ship = Ship(SCREEN)
         self.hits = 0
+        self.game_over_start = 0
         self.stars = []
         Star.initialise(SCREEN)
+        Explosion.initialise(SCREEN)
+        self.explosion_group = pg.sprite.Group()
         if State.play_music:
             pg.mixer.music.play(loops=-1)
         self.pause_start = 0
@@ -67,6 +72,15 @@ class GameState(State):
             self.stars_create_per_increment = 4
 
     def handle_events(self, events, frame_time):
+        if self.game_over_start:
+            time_since_game_over = time.time() - self.game_over_start
+            if time_since_game_over > GameState._game_over_wait_time_secs:
+                # return to MenuState but no current running game as it is over
+                self.menu_state.set_running_game(None)
+                return self.menu_state
+            else:
+                return None     # keep game going until end of game over animation and music fade out
+
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
             self.ship.move_left()
@@ -98,6 +112,7 @@ class GameState(State):
                 self.stars.remove(star)
             elif star.is_near_ship(self.ship):
                 if star.collides_with_ship(self.ship):
+                    self.explosion_group.add(Explosion(star.star_rect.x, star.star_rect.y))
                     self.stars.remove(star)
                     is_hit = True
                     break
@@ -109,16 +124,13 @@ class GameState(State):
                     pg.mixer.Sound.play(SOUND_HIT)
                 return None
 
-            # hits is > as exit threshold → exit game
+            # hits is > as exit threshold → exit mode of game state
+            self.game_over_start = time.time()
             if State.play_sound:
                 pg.mixer.Sound.play(SOUND_CRASH)
-            self.render()
-            pg.display.flip()
-            pg.mixer.music.fadeout(2500)
-            pg.time.delay(2000)
-            # return to MenuState but no current running game as it is over
-            self.menu_state.set_running_game(None)
-            return self.menu_state
+            # make remaining music 250 ms less than wait time when game is over
+            pg.mixer.music.fadeout(GameState._game_over_wait_time_secs * 1000 - 250)
+            return None
 
     def render(self):
         elapsed_time = time.time() - self.start_time
@@ -134,6 +146,9 @@ class GameState(State):
         for star in self.stars:
             star.draw()
 
+        self.explosion_group.draw(SCREEN)
+        self.explosion_group.update()
+
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
@@ -141,7 +156,7 @@ class GameState(State):
         hits_text = TIME_FONT.render(f"Hits: {self.hits}", 1, self.get_color_by_hits())
         SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - 30, 10))
 
-        if self.hits >= 3:
+        if self.game_over_start:
             SCREEN.blit(LOST_TEXT, (
                 SCREEN.get_width() / 2 - LOST_TEXT.get_width() / 2, SCREEN.get_height() / 2 - LOST_TEXT.get_height() / 2))
 
