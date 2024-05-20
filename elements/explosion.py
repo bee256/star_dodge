@@ -4,7 +4,7 @@ from utils.paths import dir_images
 
 SPRITE_WIDTH = 128
 SPRITE_HEIGHT = 128
-NUM_SPRITES = 38  # As the image is 1024 pixels wide and each sprite is 128 pixels
+NUM_SPRITES = 39  # As the image is 1024 pixels wide and each sprite is 128 pixels
 sprite_sheet = pg.image.load(path.join(dir_images, 'explosion_sprites.png'))
 
 
@@ -27,7 +27,7 @@ class Explosion(pg.sprite.Sprite):
         if Explosion._class_is_initialised:
             return
 
-        explosion_size = round(screen.get_width() / 14)
+        explosion_size = round(screen.get_width() / 12)
         print(f"Explosion size is: {explosion_size}")
 
         for i in range(NUM_SPRITES):
@@ -48,20 +48,20 @@ class Explosion(pg.sprite.Sprite):
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
-        self.counter = 0
+        self.frame_counter = 0
 
     def update(self):
         explosion_speed = 1
         # update explosion animation
-        self.counter += 1
+        self.frame_counter += 1
 
-        if self.counter >= explosion_speed and self.index < len(self.images) - 1:
-            self.counter = 0
-            self.index += 1
-            self.image = self.images[self.index]
-
-        # if the animation is complete, reset animation index
-        if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
+        if self.frame_counter >= explosion_speed:
+            if self.index < len(self.images) - 1:
+                self.frame_counter = 0
+                self.index += 1
+                self.image = self.images[self.index]
+                return
+            # here self.index is >= len(self.images) → animation is over
             self.kill()
 
 
@@ -80,7 +80,7 @@ def main():
 
     # define colours
     # bg = (50, 50, 50)
-    bg = (0, 0, 0)
+    bg = (255, 255, 255)
 
     def draw_bg():
         screen.fill(bg)
@@ -110,8 +110,8 @@ def main():
         i += 1
 
         # try out the sprite
-        explosion_group.update()
         explosion_group.draw(screen)
+        explosion_group.update()
 
         # event handler
         for event in pg.event.get():
