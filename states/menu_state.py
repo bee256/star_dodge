@@ -2,6 +2,7 @@ import pygame as pg
 from os import path
 from typing import List
 
+from states.set_player_state import SetPlayerState
 from states.state import State, Difficulty
 from states.game_state import GameState
 from states.quit_state import QuitState
@@ -32,6 +33,7 @@ class MenuState(State):
 
         State.initialise(screen)
         GameState.initialise(screen)
+        SetPlayerState.initialise(screen)
         MenuState._background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
 
@@ -50,7 +52,7 @@ class MenuState(State):
         self.running_game = None
         self.current_option = 0
 
-    def set_running_game(self, running_game: GameState):
+    def set_running_game(self, running_game):
         self.running_game = running_game
         self.current_option = 0
         if running_game:
@@ -60,6 +62,7 @@ class MenuState(State):
         elif MenuState.menu_options[0] == 'Resume Game':
             MenuState.menu_options[0] = 'Play Game'
             MenuState.menu_options.remove('New Game')
+        return self
 
     def handle_events(self, events: List[pg.event.Event], frame_time):
         for event in events:
@@ -97,13 +100,15 @@ class MenuState(State):
                 State.difficulty = Difficulty.EASY
             return None
         elif selected_option == 'Play Game' or selected_option == 'New Game':
-            return GameState(self)  # new game → pass self so GameState can return the instance when Game is over or paused
+            if not State.player_name:
+                return SetPlayerState(self)
+            return GameState(self)  # new game
         elif selected_option == 'Resume Game':
             if State.play_music:
                 pg.mixer.music.unpause()
                 if pg.mixer.music.get_busy() is False:
                     pg.mixer.music.play(loops=-1)
-            return self.running_game    # paused game to be resumed: return self.running_game which is last instance of GameState()
+            return self.running_game
         elif selected_option == "Exit":
             return QuitState()
         elif selected_option.startswith("Music"):
