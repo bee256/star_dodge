@@ -47,7 +47,7 @@ class Star:
 
     def __init__(self):
         if not Star._class_is_initialised:
-            raise ValueError("Class is not initialized. Call Star.initialise() first.")
+            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
 
         star_x = random.randint(0, SCREEN.get_width() - STAR_W)
         self.star_rect = pg.Rect(star_x, -STAR_H, STAR_W, STAR_H)

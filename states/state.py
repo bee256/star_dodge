@@ -37,18 +37,18 @@ class State:
     @staticmethod
     def get_background_img():
         if not State._class_is_initialised:
-            raise ValueError("Class is not initialized. Call State.initialise() first.")
+            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
         return State._background_img
 
     @staticmethod
     def get_font_size_base():
         if not State._class_is_initialised:
-            raise ValueError("Class is not initialized. Call State.initialise() first.")
+            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
         return State._font_size_base
 
     def __init__(self):
         if not State._class_is_initialised:
-            raise ValueError("Class is not initialized. Call State.initialise() first.")
+            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
 
     def handle_events(self, events, frame_time):
         pass
