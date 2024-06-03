@@ -2,10 +2,11 @@ import pygame as pg
 from os import path
 from typing import List
 
-from states.set_player_state import SetPlayerState
-from states.state import State, Difficulty
-from states.game_state import GameState
-from states.quit_state import QuitState
+from .menu_item import MenuItem, MenuItemType
+from .set_player_state import SetPlayerState
+from .state import State, Difficulty
+from .game_state import GameState
+from .quit_state import QuitState
 from utils.colors import LIGHT_BLUE, GRAY
 from utils.paths import dir_sound, dir_fonts
 
@@ -22,6 +23,7 @@ class MenuState(State):
     _class_is_initialised = False
     _background_img: pg.Surface
     menu_options = ['Play Game', 'Level: Normal', 'Sound: on', 'Music: on', 'Exit']
+    menu_items: List[MenuItem] = []
     _menu_font: pg.font.Font
     _menu_title_font: pg.font.Font
     _menu_title: pg.Surface
@@ -39,11 +41,24 @@ class MenuState(State):
 
         global SCREEN, MENU_SOUND_MOVE, MENU_SOUND_SELECT
         SCREEN = screen
-        MenuState._menu_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base)
-        MenuState._menu_title_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base * 2)
-        MenuState._menu_title = MenuState._menu_title_font.render("Star Dodge", 1, LIGHT_BLUE)
+        # MenuState._menu_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base)
+        MenuState._menu_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
+        MenuState._menu_title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
+        MenuState._menu_title = MenuState._menu_title_font.render("STAR DODGE", 1, LIGHT_BLUE)
         MENU_SOUND_MOVE = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
         MENU_SOUND_SELECT = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
+
+        grid_x = 200
+        grid_y = 400
+        grid_offset_x = 50
+        grid_offset_y = 200
+        MenuState.menu_items.append(
+            MenuItem('new_game', 'NEW GAME', MenuItemType.SELECT, (grid_x, grid_y), True)
+        )
+        grid_y += grid_offset_y
+        MenuState.menu_items.append(
+            MenuItem('new_game', 'NEW GAME', MenuItemType.SELECT, (grid_x, grid_y), True)
+        )
 
         MenuState._class_is_initialised = True
 

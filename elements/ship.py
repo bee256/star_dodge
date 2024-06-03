@@ -24,20 +24,16 @@ class Ship:
     """
     def __init__(self, screen: pg.Surface):
         self.screen = screen
-        ship_img = pg.image.load(path.join(dir_images, 'space_ship.png'))
         # create a dictionary which stores the ship images by color
         self.ship_by_color = {}
         # the graphics loaded has a ship in grey color with RGB(100,100,100) → create colorful ships by replacing gray
-        orig_color = pg.color.Color(100, 100, 100)
+        # orig_color = pg.color.Color(100, 100, 100)
         color_set = ('green', 'yellow', 'orange', 'red')
-        for col in color_set:
-            self.ship_by_color[col] = ship_img.copy()
-            new_color = pg.color.Color(col)
-            pixel_array = pg.PixelArray(self.ship_by_color[col])
-            pixel_array.replace(orig_color, new_color)
+        for index, col in enumerate(color_set):
+            self.ship_by_color[col] = pg.image.load(path.join(dir_images, f"space_ship3_{index}{col}.png"))
 
         # calculate aspect ratio
-        image_aspect = ship_img.get_height() / ship_img.get_width()
+        image_aspect = self.ship_by_color['green'].get_height() / self.ship_by_color['green'].get_width()
         # use a reasonable width in relation so screen
         self.width = round(screen.get_width() / 28)
         # height is then derived using the aspect ratio

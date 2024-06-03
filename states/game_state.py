@@ -37,8 +37,8 @@ class GameState(State):
         font_size_base = State.get_font_size_base()
         global SCREEN, TIME_FONT, LOST_FONT, LOST_TEXT, SOUND_CRASH, SOUND_HIT
         SCREEN = screen
-        TIME_FONT = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base)
-        LOST_FONT = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base * 2)
+        TIME_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
+        LOST_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
         LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
         SOUND_CRASH = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
         SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
@@ -55,6 +55,9 @@ class GameState(State):
         self.star_add_increment = 1500
         self.start_time = time.time()
         self.ship = Ship(SCREEN)
+        self.ship_draw_in_color = True  # to let ship blink
+        self.ship_toggle_time = 0.5
+        self.ship_blink_time = time.time() + self.ship_toggle_time  # Time when ship should toggle color
         self.hits = 0
         self.game_over_start = 0
         self.stars = []
@@ -119,6 +122,10 @@ class GameState(State):
 
         if is_hit:
             self.hits += 1
+            if self.hits == 2:
+                self.ship_toggle_time = 0.25
+            if self.hits == 3:
+                self.ship_toggle_time = 0.125
             if self.hits < 3:
                 if State.play_sound:
                     pg.mixer.Sound.play(SOUND_HIT)
@@ -141,7 +148,14 @@ class GameState(State):
         SCREEN.blit(GameState._background_img, (0, 0))
         # self.ship.draw_all_ships_for_test()
 
-        self.ship.draw(self.get_color_by_hits())
+        if time.time() > self.ship_blink_time:
+            self.ship_draw_in_color = not self.ship_draw_in_color
+            self.ship_blink_time = time.time() + self.ship_toggle_time
+
+        if self.ship_draw_in_color:
+            self.ship.draw(self.get_color_by_hits())
+        else:
+            self.ship.draw('green')
 
         for star in self.stars:
             star.draw()

@@ -35,9 +35,8 @@ class SetPlayerState(State):
 
         global SCREEN, MENU_SOUND_MOVE, MENU_SOUND_SELECT
         SCREEN = screen
-        entry_font_path = pg.font.match_font('verdana')
-        SetPlayerState._entry_font = pg.font.Font(entry_font_path, round(font_size_base * 1.5))
-        SetPlayerState._title_font = pg.font.Font(path.join(dir_fonts, 'StarJedi-DGRW.ttf'), font_size_base * 2)
+        SetPlayerState._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(font_size_base * 1.5))
+        SetPlayerState._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
         SetPlayerState._title = SetPlayerState._title_font.render("Enter Player Name", 1, LIGHT_BLUE)
 
         MENU_SOUND_MOVE = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
