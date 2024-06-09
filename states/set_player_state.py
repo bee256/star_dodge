@@ -4,15 +4,11 @@ import time
 from typing import List
 
 from states.state import State
-from states.game_state import GameState
 from utils.colors import LIGHT_BLUE, WHITE, GRAY
-from utils.paths import dir_sound, dir_fonts
+from utils.paths import dir_fonts
 
 pg.init()
 pg.font.init()
-
-MENU_SOUND_MOVE: pg.mixer.Sound
-MENU_SOUND_SELECT: pg.mixer.Sound
 
 SCREEN: pg.Surface
 
@@ -33,14 +29,11 @@ class SetPlayerState(State):
         SetPlayerState._background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
 
-        global SCREEN, MENU_SOUND_MOVE, MENU_SOUND_SELECT
+        global SCREEN
         SCREEN = screen
-        SetPlayerState._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(font_size_base * 1.5))
+        SetPlayerState._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(font_size_base * 1.5))
         SetPlayerState._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
-        SetPlayerState._title = SetPlayerState._title_font.render("Enter Player Name", 1, LIGHT_BLUE)
-
-        MENU_SOUND_MOVE = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
-        MENU_SOUND_SELECT = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
+        SetPlayerState._title = SetPlayerState._title_font.render("ENTER PLAYER", 1, LIGHT_BLUE)
 
         SetPlayerState._class_is_initialised = True
 
@@ -63,9 +56,10 @@ class SetPlayerState(State):
                 continue
             if event.key == pg.K_ESCAPE:
                 return self.menu_state
-            if event.key == pg.K_RETURN:
-                print("You entered:", self.user_text)
-                return GameState(self.menu_state)
+            if event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
+                State.player_name = self.user_text
+                self.menu_state.set_player()
+                return self.menu_state
             elif event.key == pg.K_BACKSPACE:
                 self.user_text = self.user_text[:-1]
             else:
@@ -94,3 +88,6 @@ class SetPlayerState(State):
 
         # Render the input box
         pg.draw.rect(SCREEN, GRAY, self.input_box, 2)
+
+    def get_frame_rate(self) -> int:
+        return 20

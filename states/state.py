@@ -19,7 +19,7 @@ class State:
     _font_size_base: int
     play_music = True
     play_sound = True
-    player_name = None
+    player_name = 'Anonymous'
 
     difficulty: Difficulty
     difficulty = Difficulty.NORMAL
@@ -56,3 +56,7 @@ class State:
 
     def render(self):
         pass
+
+    def get_frame_rate(self) -> int:
+        # Classes derived from State class are supposed to overwrite this method
+        return 60

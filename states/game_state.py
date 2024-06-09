@@ -39,7 +39,7 @@ class GameState(State):
         SCREEN = screen
         TIME_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
         LOST_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
-        LOST_TEXT = LOST_FONT.render("Raumschiff kaputt!", 1, DARK_RED)
+        LOST_TEXT = LOST_FONT.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         SOUND_CRASH = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
         SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
         GameState._class_is_initialised = True
@@ -165,14 +165,17 @@ class GameState(State):
 
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
-        time_text = TIME_FONT.render(f"Time: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
+        time_text = TIME_FONT.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
         SCREEN.blit(time_text, (30, 10))
-        hits_text = TIME_FONT.render(f"Hits: {self.hits}", 1, self.get_color_by_hits())
+        hits_text = TIME_FONT.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
         SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - 30, 10))
 
         if self.game_over_start:
             SCREEN.blit(LOST_TEXT, (
                 SCREEN.get_width() / 2 - LOST_TEXT.get_width() / 2, SCREEN.get_height() / 2 - LOST_TEXT.get_height() / 2))
+
+    def get_frame_rate(self) -> int:
+        return 60
 
     def get_color_by_hits(self):
         color = 'green'

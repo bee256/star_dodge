@@ -1,4 +1,5 @@
 import sys
+# import time
 import pygame as pg
 from states.menu_state import MenuState
 from states.quit_state import QuitState
@@ -26,13 +27,14 @@ def main():
     # Initial game state is showing the menu
     MenuState.initialise(SCREEN)
     current_state = MenuState()
+    frame_rate = current_state.get_frame_rate()
+    # last_frame_rate_print = time.time()
 
     while run:
-        frame_time = clock.tick(60)
-        # clock_tick_num_calls += 1
-        # if clock_tick_num_calls == 300:   # print frame rate every 5 seconds
-        #     print(f"Framerate: {clock.get_fps():.2f}")
-        #     clock_tick_num_calls = 0
+        frame_time = clock.tick(frame_rate)
+        # if time.time() - last_frame_rate_print >= 5.0:
+        #     print(f"Framerate last 5 secs: {clock.get_fps():.2f}")
+        #     last_frame_rate_print = time.time()
 
         events = pg.event.get()
         for event in events:
@@ -46,10 +48,11 @@ def main():
             if type(new_state) is QuitState:
                 break
             current_state = new_state
+            frame_rate = new_state.get_frame_rate()
 
         current_state.render()
         pg.display.flip()
-    # end of game loop
+        # end of game loop
 
     pg.quit()
 
