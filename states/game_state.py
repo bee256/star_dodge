@@ -166,9 +166,10 @@ class GameState(State):
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         time_text = TIME_FONT.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
-        SCREEN.blit(time_text, (30, 10))
+        time_and_hits_text_offset = time_text.get_height() / 1.5
+        SCREEN.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
         hits_text = TIME_FONT.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
-        SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - 30, 10))
+        SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
 
         if self.game_over_start:
             SCREEN.blit(LOST_TEXT, (

@@ -88,11 +88,11 @@ class MenuState(State):
         grid_y += grid_offset_y
         self.menu_items['exit'] = MenuItem('exit', 'EXIT', MenuItemType.SELECT, (col_left_x, grid_y), True)
         self.active_item = 'play'
-        self.set_menu_item_active(self.active_item)
+        self.__set_menu_item_active(self.active_item)
 
         self.running_game = None
 
-    def set_menu_item_active(self, active_item: str):
+    def __set_menu_item_active(self, active_item: str):
         self.active_item = active_item
         for item in self.menu_items.keys():
             if item == active_item:
@@ -100,7 +100,7 @@ class MenuState(State):
             else:
                 self.menu_items[item].is_active = False
 
-    def move_active_item(self, direction: str):
+    def __move_active_item(self, direction: str):
         move_index = 1  # this is the down direction
         if direction == 'up':
             move_index = -1
@@ -109,9 +109,9 @@ class MenuState(State):
         current_index = keys.index(self.active_item)
         next_index = (current_index + move_index) % len(keys)  # Wrap around at the end or beginning
         new_active_item = keys[next_index]
-        self.set_menu_item_active(new_active_item)
+        self.__set_menu_item_active(new_active_item)
         if not self.menu_items[new_active_item].is_visible:
-            self.move_active_item(direction)
+            self.__move_active_item(direction)
             return
 
         if State.play_sound:
@@ -122,11 +122,11 @@ class MenuState(State):
         if running_game:
             self.menu_items['resume'].is_visible = True
             self.menu_items['play'].display_text = 'NEW GAME'
-            self.set_menu_item_active('resume')
+            self.__set_menu_item_active('resume')
         else:
             self.menu_items['resume'].is_visible = False
             self.menu_items['play'].display_text = 'PLAY GAME'
-            self.set_menu_item_active('play')
+            self.__set_menu_item_active('play')
 
     def set_player(self):
         self.menu_items['player'].entry_value = State.player_name
@@ -136,9 +136,9 @@ class MenuState(State):
             if not event.type == pg.KEYDOWN:
                 continue
             if event.key == pg.K_UP or event.key == pg.K_LEFT:
-                self.move_active_item('up')
+                self.__move_active_item('up')
             elif event.key == pg.K_DOWN or event.key == pg.K_RIGHT:
-                self.move_active_item('down')
+                self.__move_active_item('down')
             elif event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
                 return_value = self.__handle_menu_selection()
                 if State.play_sound:

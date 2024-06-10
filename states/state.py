@@ -52,11 +52,11 @@ class State:
             raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
 
     def handle_events(self, events, frame_time):
-        pass
+        raise NotImplementedError("Subclass must implement abstract method")
 
     def render(self):
-        pass
+        raise NotImplementedError("Subclass must implement abstract method")
 
     def get_frame_rate(self) -> int:
-        # Classes derived from State class are supposed to overwrite this method
+        # Classes derived from State class are supposed to overwrite this method to return a reasonable frame rate
         return 60
