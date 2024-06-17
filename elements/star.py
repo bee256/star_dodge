@@ -4,13 +4,13 @@ import random
 from utils.colors import *
 
 is_initialised = False
-STAR_W: int
-STAR_H: int
-STAR_MASK: pg.mask.Mask
-STAR_VEL_MAX: int
-STAR_VEL_MIN: int
+star_w: int
+star_h: int
+star_mask: pg.mask.Mask
+star_vel_max: int
+star_vel_min: int
 STAR_COLOR_PALETTE = (WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, LIGHT_BLUE, LIGHT_GRAY, ORANGE, PURPLE, PINK)
-SCREEN: pg.Surface
+screen: pg.Surface
 
 
 class Star:
@@ -33,35 +33,35 @@ class Star:
     _class_is_initialised = False
 
     @staticmethod
-    def initialise(screen: pg.Surface):
-        global SCREEN, STAR_W, STAR_H, STAR_MASK, STAR_VEL_MAX, STAR_VEL_MIN
-        SCREEN = screen
-        STAR_W = round(screen.get_width() / 150)
-        STAR_H = round(screen.get_height() / 70)
-        STAR_VEL_MAX = round(screen.get_height() / 144)
-        STAR_VEL_MIN = round(screen.get_height() / 288)
-        STAR_MASK = pg.mask.Mask((STAR_W, STAR_H))
-        STAR_MASK.fill()
-        print(f"Star size is w: {STAR_W}, h: {STAR_H}, velocity min/max: {STAR_VEL_MIN}/{STAR_VEL_MAX}")
+    def initialise(screen_: pg.Surface):
+        global screen, star_w, star_h, star_mask, star_vel_max, star_vel_min
+        screen = screen_
+        star_w = round(screen.get_width() / 150)
+        star_h = round(screen.get_height() / 70)
+        star_vel_max = round(screen.get_height() / 144)
+        star_vel_min = round(screen.get_height() / 288)
+        star_mask = pg.mask.Mask((star_w, star_h))
+        star_mask.fill()
+        print(f"Star size is w: {star_w}, h: {star_h}, velocity min/max: {star_vel_min}/{star_vel_max}")
         Star._class_is_initialised = True
 
     def __init__(self):
         if not Star._class_is_initialised:
             raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
 
-        star_x = random.randint(0, SCREEN.get_width() - STAR_W)
-        self.star_rect = pg.Rect(star_x, -STAR_H, STAR_W, STAR_H)
+        star_x = random.randint(0, screen.get_width() - star_w)
+        self.star_rect = pg.Rect(star_x, -star_h, star_w, star_h)
         self.color = STAR_COLOR_PALETTE[random.randint(0, len(STAR_COLOR_PALETTE) - 1)]
-        self.velocity = random.randint(STAR_VEL_MIN, STAR_VEL_MAX)
+        self.velocity = random.randint(star_vel_min, star_vel_max)
 
     def draw(self):
-        pg.draw.rect(SCREEN, self.color, self.star_rect)
+        pg.draw.rect(screen, self.color, self.star_rect)
 
     def move(self):
         self.star_rect.y += self.velocity
 
     def is_off_screen(self):
-        if self.star_rect.y > SCREEN.get_height():
+        if self.star_rect.y > screen.get_height():
             return True
         return False
 
@@ -71,6 +71,6 @@ class Star:
         return False
 
     def collides_with_ship(self, ship):
-        if ship.mask.overlap(STAR_MASK, (self.star_rect.x - ship.x, self.star_rect.y - ship.y)):
+        if ship.mask.overlap(star_mask, (self.star_rect.x - ship.x, self.star_rect.y - ship.y)):
             return True
         return False

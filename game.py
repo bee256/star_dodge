@@ -9,12 +9,12 @@ pg.font.init()
 arguments = sys.argv[1:]
 if len(arguments) > 0 and arguments[0].find('window') >= 0:
     # Work in windowed mode
-    SCREEN = pg.display.set_mode((1200, 800))
+    screen = pg.display.set_mode((1200, 800))
 else:
     # Set display mode to full screen
-    SCREEN = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+    screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
-print(f"Screen size is w: {SCREEN.get_width()}, h: {SCREEN.get_height()}")
+print(f"Screen size is w: {screen.get_width()}, h: {screen.get_height()}")
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     pg.mouse.set_visible(False)
 
     # Initial game state is showing the menu
-    MenuState.initialise(SCREEN)
+    MenuState.initialise(screen)
     current_state = MenuState()
     frame_rate = current_state.get_frame_rate()
     # last_frame_rate_print = time.time()

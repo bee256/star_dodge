@@ -13,13 +13,13 @@ from utils.paths import dir_sound, dir_fonts
 pg.init()
 pg.font.init()
 
-SCREEN: pg.Surface
-TIME_FONT: pg.font.Font
-LOST_FONT: pg.font.Font
-LOST_TEXT: pg.Surface
+screen: pg.Surface
+time_font: pg.font.Font
+lost_font: pg.font.Font
+lost_text: pg.Surface
 
-SOUND_CRASH: pg.mixer.Sound
-SOUND_HIT: pg.mixer.Sound
+sound_crash: pg.mixer.Sound
+sound_hit: pg.mixer.Sound
 
 
 class GameState(State):
@@ -28,20 +28,20 @@ class GameState(State):
     _game_over_wait_time_secs = 3
 
     @staticmethod
-    def initialise(screen: pg.Surface):
+    def initialise(screen_: pg.Surface):
         if GameState._class_is_initialised:
             return
 
-        State.initialise(screen)
+        State.initialise(screen_)
         _background_img = State.get_background_img()
         font_size_base = State.get_font_size_base()
-        global SCREEN, TIME_FONT, LOST_FONT, LOST_TEXT, SOUND_CRASH, SOUND_HIT
-        SCREEN = screen
-        TIME_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
-        LOST_FONT = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
-        LOST_TEXT = LOST_FONT.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
-        SOUND_CRASH = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
-        SOUND_HIT = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
+        global screen, time_font, lost_font, lost_text, sound_crash, sound_hit
+        screen = screen_
+        time_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
+        lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
+        lost_text = lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
+        sound_crash = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
+        sound_hit = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
         GameState._class_is_initialised = True
 
     def __init__(self, menu_state: State):
@@ -54,15 +54,15 @@ class GameState(State):
         self.start_time = time.time()
         self.star_add_increment = 1500
         self.start_time = time.time()
-        self.ship = Ship(SCREEN)
+        self.ship = Ship(screen)
         self.ship_draw_in_color = True  # to let ship blink
         self.ship_toggle_time = 0.5
         self.ship_blink_time = time.time() + self.ship_toggle_time  # Time when ship should toggle color
         self.hits = 0
         self.game_over_start = 0
         self.stars = []
-        Star.initialise(SCREEN)
-        Explosion.initialise(SCREEN)
+        Star.initialise(screen)
+        Explosion.initialise(screen)
         self.explosion_group = pg.sprite.Group()
         if State.play_music:
             pg.mixer.music.play(loops=-1)
@@ -128,13 +128,13 @@ class GameState(State):
                 self.ship_toggle_time = 0.125
             if self.hits < 3:
                 if State.play_sound:
-                    pg.mixer.Sound.play(SOUND_HIT)
+                    pg.mixer.Sound.play(sound_hit)
                 return None
 
             # hits is > as exit threshold → exit mode of game state
             self.game_over_start = time.time()
             if State.play_sound:
-                pg.mixer.Sound.play(SOUND_CRASH)
+                pg.mixer.Sound.play(sound_crash)
             # make remaining music 250 ms less than wait time when game is over
             pg.mixer.music.fadeout(GameState._game_over_wait_time_secs * 1000 - 250)
             return None
@@ -145,7 +145,7 @@ class GameState(State):
             self.start_time += time.time() - self.pause_start
             self.pause_start = 0
 
-        SCREEN.blit(GameState._background_img, (0, 0))
+        screen.blit(GameState._background_img, (0, 0))
         # self.ship.draw_all_ships_for_test()
 
         if time.time() > self.ship_blink_time:
@@ -160,20 +160,20 @@ class GameState(State):
         for star in self.stars:
             star.draw()
 
-        self.explosion_group.draw(SCREEN)
+        self.explosion_group.draw(screen)
         self.explosion_group.update()
 
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
-        time_text = TIME_FONT.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
+        time_text = time_font.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
         time_and_hits_text_offset = time_text.get_height() / 1.5
-        SCREEN.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
-        hits_text = TIME_FONT.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
-        SCREEN.blit(hits_text, (SCREEN.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
+        screen.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
+        hits_text = time_font.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
+        screen.blit(hits_text, (screen.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
 
         if self.game_over_start:
-            SCREEN.blit(LOST_TEXT, (
-                SCREEN.get_width() / 2 - LOST_TEXT.get_width() / 2, SCREEN.get_height() / 2 - LOST_TEXT.get_height() / 2))
+            screen.blit(lost_text, (
+                screen.get_width() / 2 - lost_text.get_width() / 2, screen.get_height() / 2 - lost_text.get_height() / 2))
 
     def get_frame_rate(self) -> int:
         return 60
