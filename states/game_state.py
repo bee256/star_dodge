@@ -1,14 +1,15 @@
 import pygame as pg
 import time
 from os import path
+import csv
 
-from states.state import State, Difficulty
+from .state import State, Difficulty
 from elements.ship import Ship
 from elements.star import Star
 from elements.explosion import Explosion
 from utils.colors import LIGHT_BLUE, DARK_RED
 from utils.paths import dir_sound, dir_fonts
-
+from utils.config import Config
 
 pg.init()
 pg.font.init()
@@ -20,6 +21,23 @@ lost_text: pg.Surface
 
 sound_crash: pg.mixer.Sound
 sound_hit: pg.mixer.Sound
+
+# TIME_ADD_STARS_INCREMENT_INIT is the time in milliseconds which is used to initialize the timer
+# self.star_add_increment. Every self.star_add_increment milliseconds new stars will be created on the screen.
+TIME_ADD_STARS_INCREMENT_INIT = 1000
+# TIME_ADD_STARS_INCREMENT_MIN_TIME is the minimum time for self.star_add_increment.
+# self.star_add_increment is reduced during playing time, but will never be lower than TIME_ADD_STARS_INCREMENT_MIN_TIME.
+TIME_ADD_STARS_INCREMENT_MIN_TIME = 200
+TIME_ADD_STARS_INCREMENT_MIN_TIME_STAGE2 = 100
+# TIME_ADD_STARS_INCREMENT_TIMER_DECREASE defines the time in milliseconds, when the timer self.star_add_increment
+# is reduced. This means that every TIME_ADD_STARS_INCREMENT_TIMER_DECREASE milliseconds the self.star_add_increment timer
+# is reduced by TIME_ADD_STARS_INCREMENT_DECREASE milliseconds.
+TIME_ADD_STARS_INCREMENT_TIMER_DECREASE = 1000
+TIME_ADD_STARS_INCREMENT_DECREASE = 25
+TIME_ADD_STARS_INCREMENT_DECREASE_STAGE2 = 10
+# After TIME_BEGIN_STAGE2_AFTER_SECONDS seconds play time, we will make the game again harder and decrease self.star_add_increment
+# even more but not below TIME_ADD_STARS_INCREMENT_MIN_TIME_STAGE2
+TIME_BEGIN_STAGE2_AFTER_SECONDS = 120
 
 
 class GameState(State):
@@ -51,16 +69,22 @@ class GameState(State):
         super().__init__()
         self.menu_state = menu_state
         self.star_create_timer = 0
+        self.star_change_increment_timer = 0
         self.start_time = time.time()
-        self.star_add_increment = 1500
+        self.star_add_increment = TIME_ADD_STARS_INCREMENT_INIT
+        self.add_stars_increment_min_time = TIME_ADD_STARS_INCREMENT_MIN_TIME
+        self.add_stars_increment_decrease = TIME_ADD_STARS_INCREMENT_DECREASE
         self.start_time = time.time()
         self.ship = Ship(screen)
         self.ship_draw_in_color = True  # to let ship blink
         self.ship_toggle_time = 0.5
         self.ship_blink_time = time.time() + self.ship_toggle_time  # Time when ship should toggle color
+        self.star_count_time = 0
+        self.stars_on_screen_by_time = []
         self.hits = 0
         self.game_over_start = 0
         self.stars = []
+        self.elapsed_time = 0.0
         Star.initialise(screen)
         Explosion.initialise(screen)
         self.explosion_group = pg.sprite.Group()
@@ -74,6 +98,9 @@ class GameState(State):
         else:  # Normal state
             self.stars_create_per_increment = 4
 
+        config = Config()
+        self.arg_store_time_num_stars_csv = config.get_arg('store_time_num_stars_csv')
+
     def handle_events(self, events, frame_time):
         if self.game_over_start:
             time_since_game_over = time.time() - self.game_over_start
@@ -82,7 +109,7 @@ class GameState(State):
                 self.menu_state.set_running_game(None)
                 return self.menu_state
             else:
-                return None     # keep game going until end of game over animation and music fade out
+                return None  # keep game going until end of game over animation and music fade out
 
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
@@ -92,21 +119,36 @@ class GameState(State):
         if keys[pg.K_ESCAPE] or keys[pg.K_SPACE]:
             pg.mixer.music.pause()
             self.pause_start = time.time()
+            # write csv file in pause mode as well, so we can analyze as well in immortal mode
+            if self.arg_store_time_num_stars_csv:
+                self.write_stars_by_time()
             # return in pause mode
             self.menu_state.set_running_game(self)
             return self.menu_state
 
+        self.elapsed_time = time.time() - self.start_time
+        if self.pause_start:
+            self.start_time += time.time() - self.pause_start
+            self.pause_start = 0
+
+        if self.elapsed_time >= TIME_BEGIN_STAGE2_AFTER_SECONDS:
+            self.add_stars_increment_min_time = TIME_ADD_STARS_INCREMENT_MIN_TIME_STAGE2
+            self.add_stars_increment_decrease = TIME_ADD_STARS_INCREMENT_DECREASE_STAGE2
+
         self.star_create_timer += frame_time
+        self.star_change_increment_timer += frame_time
 
         # game logic: every star_add_increment we create a bunch of stars
-        if self.star_create_timer > self.star_add_increment:
+        if self.star_create_timer >= self.star_add_increment:
             for _ in range(self.stars_create_per_increment):
                 star = Star()
                 self.stars.append(star)
+                self.star_create_timer = 0
 
-            # here we decrease star_add_increment, so that starts get created faster and faster, but not faster than a threshold
-            self.star_add_increment = max(150, self.star_add_increment - 50)
-            self.star_create_timer = 0
+        if self.star_change_increment_timer >= TIME_ADD_STARS_INCREMENT_TIMER_DECREASE:
+            # here we decrease star_add_increment, so that stars get created faster and faster, but not faster than a threshold
+            self.star_add_increment = max(self.add_stars_increment_min_time, self.star_add_increment - self.add_stars_increment_decrease)
+            self.star_change_increment_timer = 0
 
         is_hit = False
         for star in self.stars.copy():
@@ -137,14 +179,11 @@ class GameState(State):
                 pg.mixer.Sound.play(sound_crash)
             # make remaining music 250 ms less than wait time when game is over
             pg.mixer.music.fadeout(GameState._game_over_wait_time_secs * 1000 - 250)
+            if self.arg_store_time_num_stars_csv:
+                self.write_stars_by_time()
             return None
 
     def render(self):
-        elapsed_time = time.time() - self.start_time
-        if self.pause_start:
-            self.start_time += time.time() - self.pause_start
-            self.pause_start = 0
-
         screen.blit(GameState._background_img, (0, 0))
         # self.ship.draw_all_ships_for_test()
 
@@ -157,14 +196,19 @@ class GameState(State):
         else:
             self.ship.draw('green')
 
+        if self.arg_store_time_num_stars_csv:
+            if self.elapsed_time >= self.star_count_time:
+                self.stars_on_screen_by_time.append((self.elapsed_time, len(self.stars)))
+                self.star_count_time = self.elapsed_time + 1
+
         for star in self.stars:
             star.draw()
 
         self.explosion_group.draw(screen)
         self.explosion_group.update()
 
-        minutes = int(elapsed_time // 60)
-        seconds = int(elapsed_time % 60)
+        minutes = int(self.elapsed_time // 60)
+        seconds = int(self.elapsed_time % 60)
         time_text = time_font.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
         time_and_hits_text_offset = time_text.get_height() / 1.5
         screen.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
@@ -187,3 +231,19 @@ class GameState(State):
         elif self.hits >= 3:
             color = 'red'
         return color
+
+    def write_stars_by_time(self):
+        # Array of tuples
+        # Specify the CSV file name
+        filename = 'num_stars_by_time.csv'
+
+        # Writing to the CSV file
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Optionally write a header
+            writer.writerow(['Time', '# Stars'])
+            # Write data
+            for row in self.stars_on_screen_by_time:
+                writer.writerow(row)
+
+        print(f'Data successfully written to {filename}')
