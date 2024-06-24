@@ -1,6 +1,8 @@
 import time
 import pygame as pg
+
 from utils.config import Config
+from states.state import State
 from states.menu_state import MenuState
 from states.quit_state import QuitState
 
@@ -31,8 +33,9 @@ def main():
     clock = pg.time.Clock()
     pg.mouse.set_visible(False)
 
+    State(screen)
     # Initial game state is showing the menu
-    MenuState.initialise(screen)
+    MenuState.initialise()
     current_state = MenuState()
     frame_rate = current_state.get_frame_rate()
     last_frame_rate_print = time.time()

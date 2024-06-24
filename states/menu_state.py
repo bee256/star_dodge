@@ -3,8 +3,8 @@ from os import path
 from typing import List
 
 from .menu_item import MenuItem, MenuItemType
-from .set_player_state import SetPlayerState
 from .state import State, Difficulty
+from .set_player_state import SetPlayerState
 from .game_state import GameState
 from .quit_state import QuitState
 from utils.colors import LIGHT_BLUE, GRAY
@@ -29,27 +29,27 @@ class MenuState(State):
     _instructions_line2: pg.Surface
 
     @staticmethod
-    def initialise(screen_: pg.Surface):
+    def initialise():
         if MenuState._class_is_initialised:
             return
 
+        state = State()
         global screen, menu_sound_move, menu_sound_select
-        screen = screen_
+        screen = state.screen
 
-        State.initialise(screen)
-        GameState.initialise(screen)
-        SetPlayerState.initialise(screen)
-        MenuState._background_img = State.get_background_img()
+        GameState.initialise()
+        SetPlayerState.initialise()
+        MenuState._background_img = state.background_img
         MenuState._ship_img = pg.image.load(path.join(dir_images, f"space_ship3_0green.png"))
         image_aspect = MenuState._ship_img.get_height() / MenuState._ship_img.get_width()
         image_height = MenuState._font_size_base * 3
         MenuState._ship_img = pg.transform.smoothscale(MenuState._ship_img, (image_height / image_aspect, image_height))
-        MenuState._font_size_base = State.get_font_size_base()
+        MenuState._font_size_base = state.font_size_base
         MenuItem.initialise(screen, round(MenuState._font_size_base * 1.2))
 
         title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(MenuState._font_size_base * 2.5))
         MenuState._title_word1 = title_font.render("STAR ", 1, LIGHT_BLUE)
-        MenuState._title_word2 = title_font.render(" DODGE", 1, LIGHT_BLUE)
+        MenuState._title_word2 = title_font.render(" DRIFT", 1, LIGHT_BLUE)
         instructions_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(MenuState._font_size_base * 0.6))
         MenuState._instructions_line1 = instructions_font.render("Arrow keys to move", 1, GRAY)
         MenuState._instructions_line2 = instructions_font.render("Return/Enter to select", 1, GRAY)

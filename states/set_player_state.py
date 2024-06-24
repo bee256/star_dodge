@@ -21,16 +21,15 @@ class SetPlayerState(State):
     _title: pg.Surface
 
     @staticmethod
-    def initialise(screen_: pg.Surface):
+    def initialise():
         if SetPlayerState._class_is_initialised:
             return
 
+        state = State()
         global screen
-        screen = screen_
-
-        State.initialise(screen)
-        SetPlayerState._background_img = State.get_background_img()
-        font_size_base = State.get_font_size_base()
+        screen = state.screen
+        SetPlayerState._background_img = state.background_img
+        font_size_base = state.font_size_base
 
         SetPlayerState._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(font_size_base * 1.5))
         SetPlayerState._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
@@ -39,7 +38,6 @@ class SetPlayerState(State):
         SetPlayerState._class_is_initialised = True
 
     def __init__(self, menu_state: State):
-        super().__init__()
         self.menu_state = menu_state
 
         ibox_w = round(screen.get_width() / 2.2)

@@ -46,15 +46,15 @@ class GameState(State):
     _game_over_wait_time_secs = 3
 
     @staticmethod
-    def initialise(screen_: pg.Surface):
+    def initialise():
         if GameState._class_is_initialised:
             return
 
-        State.initialise(screen_)
-        _background_img = State.get_background_img()
-        font_size_base = State.get_font_size_base()
+        state = State()
+        _background_img = state.background_img
+        font_size_base = state.font_size_base
         global screen, time_font, lost_font, lost_text, sound_crash, sound_hit
-        screen = screen_
+        screen = state.screen
         time_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
         lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
         lost_text = lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
