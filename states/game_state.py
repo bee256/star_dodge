@@ -3,24 +3,17 @@ import time
 from os import path
 import csv
 
-from .state import State, Difficulty
+from .state import State
 from elements.ship import Ship
 from elements.star import Star
 from elements.explosion import Explosion
+from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, DARK_RED
 from utils.paths import dir_sound, dir_fonts
 from utils.config import Config
 
-pg.init()
-pg.font.init()
-
 screen: pg.Surface
-time_font: pg.font.Font
-lost_font: pg.font.Font
-lost_text: pg.Surface
-
-sound_crash: pg.mixer.Sound
-sound_hit: pg.mixer.Sound
+settings: Settings
 
 # TIME_ADD_STARS_INCREMENT_INIT is the time in milliseconds which is used to initialize the timer
 # self.star_add_increment. Every self.star_add_increment milliseconds new stars will be created on the screen.
@@ -39,35 +32,24 @@ TIME_ADD_STARS_INCREMENT_DECREASE_STAGE2 = 10
 # even more but not below TIME_ADD_STARS_INCREMENT_MIN_TIME_STAGE2
 TIME_BEGIN_STAGE2_AFTER_SECONDS = 120
 
+GAME_OVER_WAIT_TIME_SECS = 3
+
 
 class GameState(State):
-    _class_is_initialised = False
-    _background_img: pg.Surface
-    _game_over_wait_time_secs = 3
-
-    @staticmethod
-    def initialise():
-        if GameState._class_is_initialised:
-            return
-
-        state = State()
-        _background_img = state.background_img
-        font_size_base = state.font_size_base
-        global screen, time_font, lost_font, lost_text, sound_crash, sound_hit
-        screen = state.screen
-        time_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base)
-        lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), font_size_base * 2)
-        lost_text = lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
-        sound_crash = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
-        sound_hit = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
-        GameState._class_is_initialised = True
-
     def __init__(self, menu_state: State):
-        if not GameState._class_is_initialised:
-            raise ValueError(f"Class is not initialized. Call {__class__.__name__}.initialise() first.")
-
         super().__init__()
         self.menu_state = menu_state
+
+        global screen, settings
+        settings = Settings()
+        screen = settings.screen
+
+        self.time_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base)
+        self.lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
+        self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
+        self.sound_crash = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
+        self.sound_hit = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
+
         self.star_create_timer = 0
         self.star_change_increment_timer = 0
         self.start_time = time.time()
@@ -88,12 +70,12 @@ class GameState(State):
         Star.initialise(screen)
         Explosion.initialise(screen)
         self.explosion_group = pg.sprite.Group()
-        if State.play_music:
+        if settings.play_music:
             pg.mixer.music.play(loops=-1)
         self.pause_start = 0
-        if State.difficulty == Difficulty.EASY:
+        if settings.difficulty == Difficulty.EASY:
             self.stars_create_per_increment = 3
-        elif State.difficulty == Difficulty.HARD:
+        elif settings.difficulty == Difficulty.HARD:
             self.stars_create_per_increment = 5
         else:  # Normal state
             self.stars_create_per_increment = 4
@@ -104,7 +86,7 @@ class GameState(State):
     def handle_events(self, events, frame_time):
         if self.game_over_start:
             time_since_game_over = time.time() - self.game_over_start
-            if time_since_game_over > GameState._game_over_wait_time_secs:
+            if time_since_game_over > GAME_OVER_WAIT_TIME_SECS:
                 # return to MenuState but no current running game as it is over
                 self.menu_state.set_running_game(None)
                 return self.menu_state
@@ -169,22 +151,22 @@ class GameState(State):
             if self.hits == 3:
                 self.ship_toggle_time = 0.125
             if self.hits < 3:
-                if State.play_sound:
-                    pg.mixer.Sound.play(sound_hit)
+                if settings.play_sound:
+                    pg.mixer.Sound.play(self.sound_hit)
                 return None
 
             # hits is > as exit threshold → exit mode of game state
             self.game_over_start = time.time()
-            if State.play_sound:
-                pg.mixer.Sound.play(sound_crash)
+            if settings.play_sound:
+                pg.mixer.Sound.play(self.sound_crash)
             # make remaining music 250 ms less than wait time when game is over
-            pg.mixer.music.fadeout(GameState._game_over_wait_time_secs * 1000 - 250)
+            pg.mixer.music.fadeout(GAME_OVER_WAIT_TIME_SECS * 1000 - 250)
             if self.arg_store_time_num_stars_csv:
                 self.write_stars_by_time()
             return None
 
     def render(self):
-        screen.blit(GameState._background_img, (0, 0))
+        screen.blit(settings.background_img, (0, 0))
         # self.ship.draw_all_ships_for_test()
 
         if time.time() > self.ship_blink_time:
@@ -209,15 +191,15 @@ class GameState(State):
 
         minutes = int(self.elapsed_time // 60)
         seconds = int(self.elapsed_time % 60)
-        time_text = time_font.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
+        time_text = self.time_font.render(f"TIME: {minutes:02d}:{seconds:02d}", 1, pg.Color(LIGHT_BLUE))
         time_and_hits_text_offset = time_text.get_height() / 1.5
         screen.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
-        hits_text = time_font.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
+        hits_text = self.time_font.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
         screen.blit(hits_text, (screen.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
 
         if self.game_over_start:
-            screen.blit(lost_text, (
-                screen.get_width() / 2 - lost_text.get_width() / 2, screen.get_height() / 2 - lost_text.get_height() / 2))
+            screen.blit(self.lost_text, (
+                screen.get_width() / 2 - self.lost_text.get_width() / 2, screen.get_height() / 2 - self.lost_text.get_height() / 2))
 
     def get_frame_rate(self) -> int:
         return 60

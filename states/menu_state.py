@@ -2,63 +2,43 @@ import pygame as pg
 from os import path
 from typing import List
 
+from .state import State
 from .menu_item import MenuItem, MenuItemType
-from .state import State, Difficulty
 from .set_player_state import SetPlayerState
 from .game_state import GameState
 from .quit_state import QuitState
+from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, GRAY
 from utils.paths import dir_sound, dir_fonts, dir_images
 
-pg.init()
-pg.font.init()
-
-menu_sound_move: pg.mixer.Sound
-menu_sound_select: pg.mixer.Sound
 screen: pg.Surface
+settings: Settings
 
 
 class MenuState(State):
-    _class_is_initialised = False
-    _background_img: pg.Surface
-    _ship_img: pg.Surface
-    _font_size_base: int
-    _title_word1: pg.Surface
-    _title_word2: pg.Surface
-    _instructions_line1: pg.Surface
-    _instructions_line2: pg.Surface
-
-    @staticmethod
-    def initialise():
-        if MenuState._class_is_initialised:
-            return
-
-        state = State()
-        global screen, menu_sound_move, menu_sound_select
-        screen = state.screen
-
-        GameState.initialise()
-        SetPlayerState.initialise()
-        MenuState._background_img = state.background_img
-        MenuState._ship_img = pg.image.load(path.join(dir_images, f"space_ship3_0green.png"))
-        image_aspect = MenuState._ship_img.get_height() / MenuState._ship_img.get_width()
-        image_height = MenuState._font_size_base * 3
-        MenuState._ship_img = pg.transform.smoothscale(MenuState._ship_img, (image_height / image_aspect, image_height))
-        MenuState._font_size_base = state.font_size_base
-        MenuItem.initialise(screen, round(MenuState._font_size_base * 1.2))
-
-        title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(MenuState._font_size_base * 2.5))
-        MenuState._title_word1 = title_font.render("STAR ", 1, LIGHT_BLUE)
-        MenuState._title_word2 = title_font.render(" DRIFT", 1, LIGHT_BLUE)
-        instructions_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(MenuState._font_size_base * 0.6))
-        MenuState._instructions_line1 = instructions_font.render("Arrow keys to move", 1, GRAY)
-        MenuState._instructions_line2 = instructions_font.render("Return/Enter to select", 1, GRAY)
-        menu_sound_move = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
-        menu_sound_select = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
-        MenuState._class_is_initialised = True
-
     def __init__(self):
         super().__init__()
+
+        global screen, settings
+        settings = Settings()
+        screen = settings.screen
+
+        self._ship_img = pg.image.load(path.join(dir_images, f"space_ship3_0green.png"))
+        image_aspect = self._ship_img.get_height() / self._ship_img.get_width()
+        image_height = settings.font_size_base * 3
+        self._ship_img = pg.transform.smoothscale(self._ship_img, (image_height / image_aspect, image_height))
+        MenuItem.initialise(screen, round(settings.font_size_base * 1.2))
+
+        title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 2.5))
+        self._title_word1 = title_font.render("STAR ", 1, LIGHT_BLUE)
+        self._title_word2 = title_font.render(" DRIFT", 1, LIGHT_BLUE)
+        instructions_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 0.6))
+        self._instructions_line1 = instructions_font.render("Arrow keys to move", 1, GRAY)
+        self._instructions_line2 = instructions_font.render("Return/Enter to select", 1, GRAY)
+        self.menu_sound_move = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
+        self.menu_sound_select = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
+        MenuState._class_is_initialised = True
+
         self.menu_items: {MenuItem} = {}
 
         # To calculate positions of column 1 and colum 2 of the menu, we first get the full width of the menu.
@@ -72,12 +52,12 @@ class MenuState(State):
         col_right_x = col_left_x + menu_width - width_of_resume_game_menu_str
         grid_y = screen.get_height() * 0.37
         # grid_offset_y = SCREEN.get_height() / 16
-        grid_offset_y = MenuState._font_size_base * 2
+        grid_offset_y = settings.font_size_base * 2
         self.menu_items['play'] = MenuItem('play', 'PLAY GAME', MenuItemType.SELECT, (col_left_x, grid_y), True)
         self.menu_items['resume'] = MenuItem('resume', 'RESUME GAME', MenuItemType.SELECT, (col_right_x, grid_y), False)
         grid_y += grid_offset_y
         self.menu_items['player'] = MenuItem('player', 'PLAYER: ', MenuItemType.ENTRY, (col_left_x, grid_y), True)
-        self.menu_items['player'].entry_value = State.player_name
+        self.menu_items['player'].entry_value = settings.player_name
         grid_y += grid_offset_y
         self.menu_items['level'] = MenuItem('level', 'LEVEL: NORMAL', MenuItemType.SELECT, (col_left_x, grid_y), True)
         grid_y += grid_offset_y
@@ -115,8 +95,8 @@ class MenuState(State):
             self.__move_active_item(direction)
             return
 
-        if State.play_sound:
-            pg.mixer.Sound.play(menu_sound_move)
+        if settings.play_sound:
+            pg.mixer.Sound.play(self.menu_sound_move)
 
     def set_running_game(self, running_game):
         self.running_game = running_game
@@ -130,7 +110,7 @@ class MenuState(State):
             self.__set_menu_item_active('play')
 
     def set_player(self):
-        self.menu_items['player'].entry_value = State.player_name
+        self.menu_items['player'].entry_value = settings.player_name
 
     def handle_events(self, events: List[pg.event.Event], frame_time):
         for event in events:
@@ -142,11 +122,11 @@ class MenuState(State):
                 self.__move_active_item('down')
             elif event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
                 return_value = self.__handle_menu_selection()
-                if State.play_sound:
+                if settings.play_sound:
                     if self.active_item != 'play':
-                        pg.mixer.Sound.play(menu_sound_select)
-                    elif not State.play_music:
-                        pg.mixer.Sound.play(menu_sound_select)
+                        pg.mixer.Sound.play(self.menu_sound_select)
+                    elif not settings.play_music:
+                        pg.mixer.Sound.play(self.menu_sound_select)
                 if return_value:
                     return return_value
 
@@ -167,7 +147,7 @@ class MenuState(State):
         elif self.active_item == 'player':
             return SetPlayerState(self)
         elif self.active_item == 'play':
-            if not State.player_name:
+            if not settings.player_name:
                 return SetPlayerState(self)
             return GameState(self)  # new game
         elif self.active_item == 'resume':
@@ -186,23 +166,23 @@ class MenuState(State):
             State.play_sound = menu_item.toggle_value
 
     def render(self):
-        screen.blit(MenuState._background_img, (0, 0))
-        total_size_menu_title = MenuState._title_word1.get_width() + MenuState._ship_img.get_width() + MenuState._title_word2.get_width()
+        screen.blit(settings.background_img, (0, 0))
+        total_size_menu_title = self._title_word1.get_width() + self._ship_img.get_width() + self._title_word2.get_width()
         word1_pos_x = screen.get_width() / 2 - total_size_menu_title / 2
-        img_pos_x = word1_pos_x + MenuState._title_word1.get_width()
-        word2_pos_x = img_pos_x + MenuState._ship_img.get_width()
-        screen.blit(MenuState._title_word1, (word1_pos_x, screen.get_height() * 0.16))
-        screen.blit(MenuState._ship_img, (img_pos_x, screen.get_height() * 0.16))
-        screen.blit(MenuState._title_word2, (word2_pos_x, screen.get_height() * 0.16))
+        img_pos_x = word1_pos_x + self._title_word1.get_width()
+        word2_pos_x = img_pos_x + self._ship_img.get_width()
+        screen.blit(self._title_word1, (word1_pos_x, screen.get_height() * 0.16))
+        screen.blit(self._ship_img, (img_pos_x, screen.get_height() * 0.16))
+        screen.blit(self._title_word2, (word2_pos_x, screen.get_height() * 0.16))
 
         # line 2 of the instructions is longer, so this one is used for the pox_x calculation
-        line_height = MenuState._instructions_line1.get_height()
-        instructions_pos_x = screen.get_width() - MenuState._instructions_line2.get_width() - line_height
+        line_height = self._instructions_line1.get_height()
+        instructions_pos_x = screen.get_width() - self._instructions_line2.get_width() - line_height
         instructions_pos_y1 = screen.get_height() - 3 * line_height
         instructions_pos_y2 = screen.get_height() - 2 * line_height
 
-        screen.blit(MenuState._instructions_line1, (instructions_pos_x, instructions_pos_y1))
-        screen.blit(MenuState._instructions_line2, (instructions_pos_x, instructions_pos_y2))
+        screen.blit(self._instructions_line1, (instructions_pos_x, instructions_pos_y1))
+        screen.blit(self._instructions_line2, (instructions_pos_x, instructions_pos_y2))
 
         for mi in self.menu_items.values():
             mi.draw()

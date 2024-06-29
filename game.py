@@ -2,7 +2,7 @@ import time
 import pygame as pg
 
 from utils.config import Config
-from states.state import State
+from utils.settings import Settings
 from states.menu_state import MenuState
 from states.quit_state import QuitState
 
@@ -24,6 +24,8 @@ def main():
             (width, height) = (arg_win[0], arg_win[1])
         screen = pg.display.set_mode((width, height))
 
+    # Now we have the screen, we can init the Settings() singleton class and give the screen for the first call.
+    Settings(screen)
     if config.get_arg('verbose'):
         print(f"Screen size is w: {screen.get_width()}, h: {screen.get_height()}")
 
@@ -33,9 +35,7 @@ def main():
     clock = pg.time.Clock()
     pg.mouse.set_visible(False)
 
-    State(screen)
     # Initial game state is showing the menu
-    MenuState.initialise()
     current_state = MenuState()
     frame_rate = current_state.get_frame_rate()
     last_frame_rate_print = time.time()
