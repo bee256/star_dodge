@@ -8,7 +8,7 @@ from elements.ship import Ship
 from elements.star import Star
 from elements.explosion import Explosion
 from utils.settings import Settings, Difficulty
-from utils.colors import LIGHT_BLUE, DARK_RED
+from utils.colors import LIGHT_BLUE, DARK_RED, WHITE
 from utils.paths import dir_sound, dir_fonts
 from utils.config import Config
 
@@ -46,6 +46,7 @@ class GameState(State):
 
         self.time_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base)
         self.lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
+        self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         self.sound_crash = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
         self.sound_hit = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
@@ -67,6 +68,8 @@ class GameState(State):
         self.game_over_start = 0
         self.stars = []
         self.elapsed_time = 0.0
+        self.submit_score_rc = 0
+        self.submit_score_message = None
         Star.initialise(screen)
         Explosion.initialise(screen)
         self.explosion_group = pg.sprite.Group()
@@ -157,10 +160,12 @@ class GameState(State):
 
             # hits is > as exit threshold → exit mode of game state
             self.game_over_start = time.time()
+            if settings.score_server_host:
+                self.submit_score_rc, self.submit_score_message = settings.submit_score(self.elapsed_time)
             if settings.play_sound:
                 pg.mixer.Sound.play(self.sound_crash)
-            # make remaining music 250 ms less than wait time when game is over
-            pg.mixer.music.fadeout(GAME_OVER_WAIT_TIME_SECS * 1000 - 250)
+            # make remaining music 100 ms less than wait time when game is over
+            pg.mixer.music.fadeout(GAME_OVER_WAIT_TIME_SECS * 1000 - 100)
             if self.arg_store_time_num_stars_csv:
                 self.write_stars_by_time()
             return None

@@ -4,7 +4,7 @@ import time
 from typing import List
 
 from states.state import State
-from utils.colors import LIGHT_BLUE, WHITE, GRAY
+from utils.colors import LIGHT_BLUE, WHITE, GRAY, DARK_RED
 from utils.paths import dir_fonts
 from utils.settings import Settings
 
@@ -23,6 +23,8 @@ class SetPlayerState(State):
         self._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 1.5))
         self._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
         self._title = self._title_font.render("ENTER PLAYER", 1, LIGHT_BLUE)
+        player_not_empty_hint_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.75))
+        self._player_not_empty_hint = player_not_empty_hint_font.render("Please enter a player name", 1, DARK_RED)
 
         ibox_w = round(screen.get_width() / 2.2)
         ibox_h = self._entry_font.get_height() + 20
@@ -32,6 +34,7 @@ class SetPlayerState(State):
         self.user_text = ''
         self.cursor_visible = True  # Cursor visibility
         self.cursor_blink_time = time.time() + 0.5  # Time when cursor should toggle visibility
+        self.show_player_not_empty_hint = False
 
     def handle_events(self, events: List[pg.event.Event], frame_time):
         for event in events:
@@ -40,12 +43,17 @@ class SetPlayerState(State):
             if event.key == pg.K_ESCAPE:
                 return self.menu_state
             if event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
-                settings.player_name = self.user_text
+                if self.user_text.strip() == "":
+                    self.show_player_not_empty_hint = True
+                    self.user_text = ""
+                    return
+                settings.player_name = self.user_text.strip()
                 self.menu_state.set_player()
                 return self.menu_state
             elif event.key == pg.K_BACKSPACE:
                 self.user_text = self.user_text[:-1]
             else:
+                self.show_player_not_empty_hint = False
                 self.user_text += event.unicode
 
     def render(self):
@@ -71,6 +79,9 @@ class SetPlayerState(State):
 
         # Render the input box
         pg.draw.rect(screen, GRAY, self.input_box, 2)
+        if self.show_player_not_empty_hint:
+            x = self.input_box.x + (self.input_box.width - self._player_not_empty_hint.get_width()) / 2
+            screen.blit(self._player_not_empty_hint, (x, self.input_box.y + self.input_box.height + self._player_not_empty_hint.get_height() / 2))
 
     def get_frame_rate(self) -> int:
         return 20
