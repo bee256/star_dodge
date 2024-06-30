@@ -160,14 +160,14 @@ class GameState(State):
 
             # hits is > as exit threshold → exit mode of game state
             self.game_over_start = time.time()
-            if settings.score_server_host:
-                self.submit_score_rc, self.submit_score_message = settings.submit_score(self.elapsed_time)
             if settings.play_sound:
                 pg.mixer.Sound.play(self.sound_crash)
             # make remaining music 100 ms less than wait time when game is over
             pg.mixer.music.fadeout(GAME_OVER_WAIT_TIME_SECS * 1000 - 100)
             if self.arg_store_time_num_stars_csv:
                 self.write_stars_by_time()
+            if settings.score_server_host:
+                self.submit_score_rc, self.submit_score_message = settings.submit_score(self.elapsed_time)
             return None
 
     def render(self):
@@ -201,6 +201,13 @@ class GameState(State):
         screen.blit(time_text, (time_and_hits_text_offset, time_and_hits_text_offset))
         hits_text = self.time_font.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
         screen.blit(hits_text, (screen.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
+
+        info_text = self.info_font.render(f"Player: {settings.player_name}", True, WHITE)
+        # Create a transparent surface for the text
+        info_text_alpha = pg.Surface((info_text.get_width(), info_text.get_height()), pg.SRCALPHA)
+        info_text_alpha.blit(info_text, (0, 0))
+        info_text_alpha.set_alpha(64)  # Set the transparency level (0 is fully transparent, 255 is fully opaque)
+        screen.blit(info_text_alpha, (info_text.get_height(), screen.get_height() - info_text.get_height() * 2))
 
         if self.game_over_start:
             screen.blit(self.lost_text, (
