@@ -131,7 +131,8 @@ class MenuState(State):
                     return return_value
 
     def __handle_menu_selection(self):
-        print(f'Item selected: {self.active_item}')
+        if settings.verbose:
+            print(f'Menu item selected: {self.active_item}')
         menu_item: MenuItem = self.menu_items[self.active_item]
         if self.active_item == 'level':
             if menu_item.display_text.endswith('EASY'):

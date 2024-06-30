@@ -2,6 +2,7 @@ import pygame as pg
 from os import path
 
 from utils.paths import dir_images
+from utils.settings import Settings
 
 
 class Ship:
@@ -49,7 +50,9 @@ class Ship:
         self.mask = pg.mask.from_surface(self.ship_by_color['green'])
         self.x = round(screen.get_width() / 2 - self.width / 2)
         self.y = round(screen.get_height() - self.height - offset)
-        print(f"Ship width: {self.width}, height: {self.height}, velocity: {self.__velocity}")
+        settings = Settings()
+        if settings.verbose:
+            print(f"Ship width: {self.width}, height: {self.height}, velocity: {self.__velocity}")
 
     def draw(self, color: str):
         self.screen.blit(self.ship_by_color[color], (self.x, self.y))

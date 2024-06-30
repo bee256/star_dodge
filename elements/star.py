@@ -2,6 +2,7 @@ import pygame as pg
 import random
 
 from utils.colors import *
+from utils.settings import Settings
 
 is_initialised = False
 star_w: int
@@ -42,7 +43,9 @@ class Star:
         star_vel_min = round(screen.get_height() / 288)
         star_mask = pg.mask.Mask((star_w, star_h))
         star_mask.fill()
-        print(f"Star size is w: {star_w}, h: {star_h}, velocity min/max: {star_vel_min}/{star_vel_max}")
+        settings = Settings()
+        if settings.verbose:
+            print(f"Star size is w: {star_w}, h: {star_h}, velocity min/max: {star_vel_min}/{star_vel_max}")
         Star._class_is_initialised = True
 
     def __init__(self):

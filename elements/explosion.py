@@ -1,6 +1,7 @@
 import pygame as pg
 from os import path
 from utils.paths import dir_images
+from utils.settings import Settings
 
 SPRITE_WIDTH = 128
 SPRITE_HEIGHT = 128
@@ -27,8 +28,10 @@ class Explosion(pg.sprite.Sprite):
         if Explosion._class_is_initialised:
             return
 
+        settings = Settings()
         explosion_size = round(screen.get_width() / 12)
-        print(f"Explosion size is: {explosion_size}")
+        if settings.verbose:
+            print(f"Explosion size is: {explosion_size}")
 
         for i in range(NUM_SPRITES):
             sprite_x = i % 8 * SPRITE_WIDTH
