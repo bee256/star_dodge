@@ -45,8 +45,23 @@ class Settings:
                                                  (self.screen.get_width(), self.screen.get_height()))
         self.font_size_base = round(self.screen.get_height() / 25)
         config = Config()
+        self.verbose = config.get_arg('verbose')
         self.score_server_host = config.get_arg('score_server_host')
         self.score_server_port = config.get_arg('score_server_port')
+        if self.score_server_host:
+            self.ping_score_server()
+
+    def ping_score_server(self):
+        try:
+            response = requests.get(f"http://{self.score_server_host}:{self.score_server_port}/ping")
+            response.raise_for_status()
+        except Exception as err:
+            print(f"Could not ping score server at http://{self.score_server_host}:{self.score_server_port} due to error: {err}",
+                  file=sys.stderr)
+            sys.exit(1)
+        else:
+            if self.verbose:
+                print(f"Successfully pinged score server at http://{self.score_server_host}:{self.score_server_port}")
 
     def submit_score(self, score):
         if self.score_server_host is None:

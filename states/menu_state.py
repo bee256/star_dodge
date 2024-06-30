@@ -136,13 +136,13 @@ class MenuState(State):
         if self.active_item == 'level':
             if menu_item.display_text.endswith('EASY'):
                 menu_item.display_text = 'LEVEL: NORMAL'
-                State.difficulty = Difficulty.NORMAL
+                settings.difficulty = Difficulty.NORMAL
             elif menu_item.display_text.endswith('NORMAL'):
                 menu_item.display_text = 'LEVEL: HARD'
-                State.difficulty = Difficulty.HARD
+                settings.difficulty = Difficulty.HARD
             else:
                 menu_item.display_text = 'LEVEL: EASY'
-                State.difficulty = Difficulty.EASY
+                settings.difficulty = Difficulty.EASY
             return None
         elif self.active_item == 'player':
             return SetPlayerState(self)
@@ -151,7 +151,7 @@ class MenuState(State):
                 return SetPlayerState(self)
             return GameState(self)  # new game
         elif self.active_item == 'resume':
-            if State.play_music:
+            if settings.play_music:
                 pg.mixer.music.unpause()
                 if pg.mixer.music.get_busy() is False:
                     pg.mixer.music.play(loops=-1)
@@ -160,10 +160,10 @@ class MenuState(State):
             return QuitState()
         elif self.active_item == 'music':
             menu_item.toggle_value = not menu_item.toggle_value
-            State.play_music = menu_item.toggle_value
+            settings.play_music = menu_item.toggle_value
         elif self.active_item == 'sound':
             menu_item.toggle_value = not menu_item.toggle_value
-            State.play_sound = menu_item.toggle_value
+            settings.play_sound = menu_item.toggle_value
 
     def render(self):
         screen.blit(settings.background_img, (0, 0))
