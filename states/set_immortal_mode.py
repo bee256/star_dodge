@@ -28,7 +28,7 @@ class SetImmortalMode(State):
         self._title = self._title_font.render("ENTER THE IMMORTAL CODE", 1, LIGHT_BLUE)
         hint_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.75))
         self._empty_hint = hint_font.render("You got no code? So go play like a noob …", 1, DARK_RED)
-        self._wrong_input = hint_font.render("Hahaha! You dont have the immortal code …", 1, DARK_RED)
+        self._wrong_input = hint_font.render("Hahaha! You don’t know the immortal code …", 1, DARK_RED)
         self._cheat_correct = hint_font.render("Yeah! You are now immortal …", 1, DARK_GREEN)
         self._immortal_turn_off = hint_font.render("Press any key to turn immortal mode off or Escape to keep it on", 1, DARK_GREEN)
         if settings.immortal_mode:
