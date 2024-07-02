@@ -39,6 +39,7 @@ class Settings:
         self.play_sound = True
         self.player_name = 'Anonymous'
         self.difficulty = Difficulty.NORMAL
+        self.immortal_mode = False
 
         pg.mixer.music.load(path.join(dir_sound, 'planetary_paths.mp3'), 'planet_paths')
         self.background_img = pg.transform.scale(pg.image.load(path.join(dir_images, 'background.jpeg')),

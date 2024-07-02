@@ -5,6 +5,7 @@ from typing import List
 from .state import State
 from .menu_item import MenuItem, MenuItemType
 from .set_player_state import SetPlayerState
+from .set_immortal_mode import SetImmortalMode
 from .game_state import GameState
 from .quit_state import QuitState
 from utils.settings import Settings, Difficulty
@@ -31,7 +32,7 @@ class MenuState(State):
 
         title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 2.5))
         self._title_word1 = title_font.render("STAR ", 1, LIGHT_BLUE)
-        self._title_word2 = title_font.render(" DRIFT", 1, LIGHT_BLUE)
+        self._title_word2 = title_font.render(" DODGE", 1, LIGHT_BLUE)
         instructions_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 0.6))
         self._instructions_line1 = instructions_font.render("Arrow keys to move", 1, GRAY)
         self._instructions_line2 = instructions_font.render("Return/Enter to select", 1, GRAY)
@@ -72,6 +73,7 @@ class MenuState(State):
         self.__set_menu_item_active(self.active_item)
 
         self.running_game = None
+        self.last_keydown_events = []
 
     def __set_menu_item_active(self, active_item: str):
         self.active_item = active_item
@@ -129,6 +131,14 @@ class MenuState(State):
                         pg.mixer.Sound.play(self.menu_sound_select)
                 if return_value:
                     return return_value
+
+            # Add the event to the list
+            self.last_keydown_events.append(event.unicode)
+            # Keep only the last 4 events in the list
+            if len(self.last_keydown_events) > 4:
+                self.last_keydown_events.pop(0)
+            if ''.join(self.last_keydown_events) == 'immo':
+                return SetImmortalMode(self)
 
     def __handle_menu_selection(self):
         if settings.verbose:

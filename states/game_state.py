@@ -48,6 +48,11 @@ class GameState(State):
         self.lost_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
         self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
+        immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
+        self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)
+        self.immortal_text.blit(immortal_text, (0, 0))
+        self.immortal_text.set_alpha(32)  # Set the transparency level (0 is fully transparent, 255 is fully opaque)
+
         self.sound_crash = pg.mixer.Sound(path.join(dir_sound, 'rubble_crash.wav'))
         self.sound_hit = pg.mixer.Sound(path.join(dir_sound, 'metal_trash_can_filled_2.wav'))
 
@@ -148,7 +153,8 @@ class GameState(State):
                     break
 
         if is_hit:
-            self.hits += 1
+            if not settings.immortal_mode:
+                self.hits += 1
             if self.hits == 2:
                 self.ship_toggle_time = 0.25
             if self.hits == 3:
@@ -160,6 +166,8 @@ class GameState(State):
 
             # hits is > as exit threshold → exit mode of game state
             self.game_over_start = time.time()
+            if settings.verbose:
+                print(f"Game over for player {settings.player_name} with a score of {self.elapsed_time:.2f}")
             if settings.play_sound:
                 pg.mixer.Sound.play(self.sound_crash)
             # make remaining music 100 ms less than wait time when game is over
@@ -202,16 +210,39 @@ class GameState(State):
         hits_text = self.time_font.render(f"HITS: {self.hits}", 1, self.get_color_by_hits())
         screen.blit(hits_text, (screen.get_width() - hits_text.get_width() - time_and_hits_text_offset, time_and_hits_text_offset))
 
+        self.draw_player_name()
+
+        if settings.immortal_mode:
+            screen.blit(self.immortal_text, (screen.get_width() / 2 - self.immortal_text.get_width() / 2, screen.get_height() / 2 - self.immortal_text.get_height() / 2))
+
+        if self.game_over_start:
+            screen.blit(self.lost_text, (screen.get_width() / 2 - self.lost_text.get_width() / 2, screen.get_height() / 2 - self.lost_text.get_height() / 2))
+            # if submit_score_message is set it means that the server score host config option has been used
+            # → report a message on screen if the submit action was successful.
+            if self.submit_score_message:
+                color = WHITE
+                if self.submit_score_rc != 0:
+                    color = DARK_RED
+                info_text = self.info_font.render(self.submit_score_message, True, color)
+                if self.submit_score_rc == 0:
+                    info_text_alpha = pg.Surface((info_text.get_width(), info_text.get_height()), pg.SRCALPHA)
+                    info_text_alpha.blit(info_text, (0, 0))
+                    info_text_alpha.set_alpha(64)  # Set the transparency level (0 is fully transparent, 255 is fully opaque)
+                    screen.blit(info_text_alpha, (info_text.get_height(), screen.get_height() - info_text.get_height() * 2))
+                else:
+                    # In case of an error we draw without alpha
+                    screen.blit(info_text, (info_text.get_height(), screen.get_height() - info_text.get_height() * 2))
+
+    def draw_player_name(self):
+        if self.game_over_start and self.submit_score_message:
+            return  # do not write the player anymore, as the submit core message will be written
+        # TODO: move rendering of player to __init__ as it stays constant during a game
         info_text = self.info_font.render(f"Player: {settings.player_name}", True, WHITE)
         # Create a transparent surface for the text
         info_text_alpha = pg.Surface((info_text.get_width(), info_text.get_height()), pg.SRCALPHA)
         info_text_alpha.blit(info_text, (0, 0))
         info_text_alpha.set_alpha(64)  # Set the transparency level (0 is fully transparent, 255 is fully opaque)
         screen.blit(info_text_alpha, (info_text.get_height(), screen.get_height() - info_text.get_height() * 2))
-
-        if self.game_over_start:
-            screen.blit(self.lost_text, (
-                screen.get_width() / 2 - self.lost_text.get_width() / 2, screen.get_height() / 2 - self.lost_text.get_height() / 2))
 
     def get_frame_rate(self) -> int:
         return 60
