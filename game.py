@@ -1,10 +1,13 @@
+import os
 import time
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame as pg
 
 from utils.config import Config
 from utils.settings import Settings
 from states.menu_state import MenuState
 from states.quit_state import QuitState
+
 
 def main():
     pg.init()
