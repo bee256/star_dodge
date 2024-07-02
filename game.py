@@ -25,6 +25,8 @@ def main():
         (width, height) = (1200, 800)
         if len(arg_win) == 2:
             (width, height) = (arg_win[0], arg_win[1])
+        elif len(arg_win) == 1:
+            (width, height) = (arg_win[0], round(arg_win[0] * 9 / 16))
         screen = pg.display.set_mode((width, height))
 
     # Now we have the screen, we can init the Settings() singleton class and give the screen for the first call.
