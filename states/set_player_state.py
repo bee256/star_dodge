@@ -4,6 +4,7 @@ import time
 from typing import List
 
 from states.state import State
+from states.helper import Instructions
 from utils.colors import LIGHT_BLUE, WHITE, GRAY, DARK_RED
 from utils.paths import dir_fonts
 from utils.settings import Settings
@@ -25,6 +26,7 @@ class SetPlayerState(State):
         self._title = self._title_font.render("ENTER PLAYER", 1, LIGHT_BLUE)
         player_not_empty_hint_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.75))
         self._player_not_empty_hint = player_not_empty_hint_font.render("Please enter a player name", 1, DARK_RED)
+        self._instructions = Instructions("Enter player name and press Return or Enter to confirm", "Escape key to cancel")
 
         ibox_w = round(screen.get_width() / 2.2)
         ibox_h = self._entry_font.get_height() + 20
@@ -59,6 +61,7 @@ class SetPlayerState(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
         screen.blit(self._title, (screen.get_width() / 2 - self._title.get_width() / 2, screen.get_height() / 5))
+        self._instructions.draw()
 
         if time.time() > self.cursor_blink_time:
             self.cursor_visible = not self.cursor_visible

@@ -140,13 +140,14 @@ class MenuState(State):
                 if return_value:
                     return return_value
 
-            # Add the event to the list
-            self.last_keydown_events.append(event.unicode)
-            # Keep only the last 4 events in the list
-            if len(self.last_keydown_events) > 4:
-                self.last_keydown_events.pop(0)
-            if ''.join(self.last_keydown_events) == 'immo':
-                return SetImmortalMode(self)
+            if not settings.immortal_mode:
+                # Add the event to the list
+                self.last_keydown_events.append(event.unicode)
+                # Keep only the last 4 events in the list
+                if len(self.last_keydown_events) > 4:
+                    self.last_keydown_events.pop(0)
+                if ''.join(self.last_keydown_events) == 'immo':
+                    return SetImmortalMode(self)
 
     def __handle_menu_selection(self):
         if settings.verbose:

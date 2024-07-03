@@ -4,6 +4,7 @@ import time
 from typing import List
 
 from states.state import State
+from states.helper import Instructions
 from utils.colors import LIGHT_BLUE, WHITE, GRAY, DARK_RED, DARK_GREEN
 from utils.paths import dir_fonts
 from utils.settings import Settings
@@ -11,7 +12,7 @@ from utils.settings import Settings
 settings: Settings
 screen: pg.Surface
 
-CHEAT_CODE = 'immo'
+CHEAT_CODE = 'ommi'
 
 
 class SetImmortalMode(State):
@@ -24,6 +25,8 @@ class SetImmortalMode(State):
 
         self._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 1.5))
         self._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
+        self._instructions = Instructions("So, you’ve found the immortal cheet screen … but now you need the code …",
+                                          "Type the code and press Return or Enter or Escape to cancel")
         self.show_hint = None
         self._title = self._title_font.render("ENTER THE IMMORTAL CODE", 1, LIGHT_BLUE)
         hint_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.75))
@@ -89,6 +92,7 @@ class SetImmortalMode(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
         screen.blit(self._title, (screen.get_width() / 2 - self._title.get_width() / 2, screen.get_height() / 5))
+        self._instructions.draw()
 
         if settings.immortal_mode:
             x = self.input_box.x + (self.input_box.width - self.show_hint.get_width()) / 2
