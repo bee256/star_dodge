@@ -9,9 +9,12 @@ from .set_player_state import SetPlayerState
 from .set_immortal_mode import SetImmortalMode
 from .game_state import GameState
 from .quit_state import QuitState
+from .credits_state import CreditsState
+from .highscore_state import HighscoreState
 from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, GRAY
 from utils.paths import dir_sound, dir_fonts, dir_images
+from elements.star import Star
 
 screen: pg.Surface
 settings: Settings
@@ -74,6 +77,11 @@ class MenuState(State):
 
         self.running_game = None
         self.last_keydown_events = []
+
+        # Initialize stars for background
+        self.stars = []
+        self.star_timer = 0
+        Star.initialise(screen)
 
     def __set_menu_item_active(self, active_item: str):
         self.active_item = active_item
@@ -184,6 +192,10 @@ class MenuState(State):
         elif self.active_item == 'sound':
             menu_item.toggle_value = not menu_item.toggle_value
             settings.play_sound = menu_item.toggle_value
+        elif self.active_item == 'credits':
+            return CreditsState(self)
+        elif self.active_item == 'highscores':
+            return HighscoreState(self)
         elif self.active_item == 'immortal_off':
             settings.immortal_mode = False
             self.set_running_game(None)
@@ -191,6 +203,19 @@ class MenuState(State):
 
     def render(self):
         screen.blit(settings.background_img, (0, 0))
+
+        # Update and draw stars
+        self.star_timer += 1
+        if self.star_timer >= 20:
+            self.stars.append(Star())
+            self.star_timer = 0
+
+        for star in self.stars:
+            star.move()
+            star.draw()
+            if star.is_off_screen():
+                self.stars.remove(star)
+
         total_size_menu_title = self._title_word1.get_width() + self._ship_img.get_width() + self._title_word2.get_width()
         word1_pos_x = screen.get_width() / 2 - total_size_menu_title / 2
         img_pos_x = word1_pos_x + self._title_word1.get_width()

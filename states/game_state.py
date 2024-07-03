@@ -2,6 +2,7 @@ import pygame as pg
 import time
 from os import path
 import csv
+from datetime import datetime
 
 from .state import State
 from .helper import Instructions
@@ -76,6 +77,7 @@ class GameState(State):
         self.hits = 0
         self.game_over_start = 0
         self.stars = []
+        self.highscores = []  # Neue Liste für Highscores
         self.elapsed_time = 0.0
         self.submit_score_rc = 0
         self.submit_score_message = None
@@ -178,6 +180,7 @@ class GameState(State):
             pg.mixer.music.fadeout(GAME_OVER_WAIT_TIME_SECS * 1000 - 100)
             if self.arg_store_time_num_stars_csv:
                 self.write_stars_by_time()
+            self.save_highscore()
             if settings.score_server_host:
                 self.submit_score_rc, self.submit_score_message = settings.submit_score(self.elapsed_time)
             return None
@@ -282,3 +285,15 @@ class GameState(State):
                 writer.writerow(row)
 
         print(f'Data successfully written to {filename}')
+
+    def save_highscore(self):
+        # Highscore als Tuple (Spielername, Zeit, Datum) speichern
+        highscore = (settings.player_name, int(self.elapsed_time), datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print(int(self.elapsed_time))
+        self.highscores.append(highscore)
+        # Highscore in eine CSV-Datei schreiben
+        with open('highscores.csv', mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(highscore)
+        print(f'Highscore gespeichert: {highscore}')
+
