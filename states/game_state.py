@@ -4,6 +4,7 @@ from os import path
 import csv
 
 from .state import State
+from .helper import Instructions
 from elements.ship import Ship
 from elements.star import Star
 from elements.explosion import Explosion
@@ -49,6 +50,9 @@ class GameState(State):
         self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
+        self.instructions = Instructions("Avoid the stars!", "Left/Right arrow keys to move the ship",
+                                         "Escape or Space key to pause the game")
+        self.instructions_alpha = 255
         self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)
         self.immortal_text.blit(immortal_text, (0, 0))
         self.immortal_text.set_alpha(32)  # Set the transparency level (0 is fully transparent, 255 is fully opaque)
@@ -181,6 +185,12 @@ class GameState(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
         # self.ship.draw_all_ships_for_test()
+        if self.elapsed_time <= 3.0:
+            self.instructions.draw()
+        elif self.instructions_alpha > 0:
+            self.instructions_alpha -= 2
+            self.instructions.set_alpha(self.instructions_alpha)
+            self.instructions.draw()
 
         if time.time() > self.ship_blink_time:
             self.ship_draw_in_color = not self.ship_draw_in_color

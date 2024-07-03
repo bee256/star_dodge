@@ -56,6 +56,7 @@ class SetImmortalMode(State):
                 settings.immortal_mode = False
                 # Cancel running game so no one can cheat a score using immortal mode
                 self.menu_state.set_running_game(None)
+                self.menu_state.set_immortal_off_menu()
                 if settings.verbose:
                     print("Immortal mode turned off!")
                 return self.menu_state
@@ -67,6 +68,7 @@ class SetImmortalMode(State):
                     return
                 if self.real_text == CHEAT_CODE:
                     settings.immortal_mode = True
+                    self.menu_state.set_immortal_off_menu()
                     if settings.verbose:
                         print("Yeah! You are now immortal!")
                     self.show_hint = self._cheat_correct
