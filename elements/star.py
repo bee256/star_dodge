@@ -37,7 +37,7 @@ class Star:
     def initialise(screen_: pg.Surface):
         global screen, star_w, star_h, star_mask, star_vel_max, star_vel_min
         screen = screen_
-        star_w = round(screen.get_width() / 150)
+        star_w = round(screen.get_width() / 160)
         star_h = round(screen.get_height() / 70)
         star_vel_max = round(screen.get_height() / 144)
         star_vel_min = round(screen.get_height() / 288)
@@ -59,6 +59,11 @@ class Star:
 
     def draw(self):
         pg.draw.rect(screen, self.color, self.star_rect)
+
+    def draw_ex(self, screen_: pg.Surface = None, color_: pg.Color = WHITE):
+        if screen_ is None:
+            screen_ = screen
+        pg.draw.rect(screen_, color_, self.star_rect)
 
     def move(self):
         self.star_rect.y += self.velocity
