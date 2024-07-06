@@ -1,5 +1,6 @@
 import pygame as pg
 import time
+import asyncio
 from os import path
 import csv
 from datetime import datetime
@@ -182,7 +183,13 @@ class GameState(State):
                 self.write_stars_by_time()
             self.save_highscore()
             if settings.score_server_host:
-                self.submit_score_rc, self.submit_score_message = settings.submit_score(self.elapsed_time)
+                self.submit_score_rc = 0
+                self.submit_score_message = f"Submitting your score {self.elapsed_time:.2f} to score server"
+                # print("Now calling asyncio.create_task(settings.submit_score())")
+                # start = time.time()
+                asyncio.create_task(settings.submit_score(self.elapsed_time, self.on_score_submitted))
+                # duration = (time.time() - start) * 1000
+                # print(f"Call of asyncio.create_task took {duration} milliseconds")
             return None
 
     def render(self):
@@ -297,3 +304,8 @@ class GameState(State):
             writer.writerow(highscore)
         print(f'Highscore gespeichert: {highscore}')
 
+    def on_score_submitted(self, result):
+        if settings.verbose:
+            print(f"Now in on_score_submitted with result: {result}")
+        self.submit_score_rc = result['rc']
+        self.submit_score_message = result['message']

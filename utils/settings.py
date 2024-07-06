@@ -1,5 +1,6 @@
 import sys
 import socket
+import aiohttp
 import platform
 import pygame as pg
 from os import path
@@ -64,31 +65,37 @@ class Settings:
             if self.verbose:
                 print(f"Successfully pinged score server at http://{self.score_server_host}:{self.score_server_port}")
 
-    def submit_score(self, score):
+    async def submit_score(self, score, callback):
         if self.score_server_host is None:
-            print("Cannot submit score since server host is not defined")
+            message = "Cannot submit score since server host is not defined"
+            print(message, file=sys.stderr)
+            callback({'rc': 1, 'message': message})
             return
 
-        computer_name = socket.gethostname()
-        os_info = platform.system() + " " + platform.release()
-        data = {
-            'name': self.player_name,
-            'score': score,
-            'nickname': None,
-            'email': None,
-            'computer_name': computer_name,
-            'os': os_info,
-            'screen_width': self.screen.get_width(),
-            'screen_height': self.screen.get_height()
-        }
-        try:
-            response = requests.post(f'http://{self.score_server_host}:{self.score_server_port}/submit_score', json=data)
-            response.raise_for_status()
-        except Exception as err:
-            message = f"Could not submit score {score:.2f} of player {self.player_name} to server: {err}"
-            print(message, file=sys.stderr)
-            return 1, message
-        else:
-            message = f"Successfully submitted score {score:.2f} of player {self.player_name} to server"
-            print(f"{message} http://{self.score_server_host}:{self.score_server_port}: {response.json()}")
-            return 0, message
+        async with aiohttp.ClientSession() as session:
+            try:
+                computer_name = socket.gethostname()
+                os_info = platform.system() + " " + platform.release()
+                data = {
+                    'name': self.player_name,
+                    'score': score,
+                    'nickname': None,
+                    'email': None,
+                    'computer_name': computer_name,
+                    'os': os_info,
+                    'screen_width': self.screen.get_width(),
+                    'screen_height': self.screen.get_height()
+                }
+
+                async with session.post(f'http://{self.score_server_host}:{self.score_server_port}/submit_score', json=data) as response:
+                    response.raise_for_status()
+                    result = await response.json()
+                    message = f"Successfully submitted score {score:.2f} of player {self.player_name} to server"
+                    if self.verbose:
+                        print(f"{message} http://{self.score_server_host}:{self.score_server_port}: {result}")
+                    callback({'rc': 0, 'message': message})
+
+            except Exception as err:
+                message = f"Could not submit score {score:.2f} of player {self.player_name} to server: {err}"
+                print(message, file=sys.stderr)
+                callback({'rc': 1, 'message': message})

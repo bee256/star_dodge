@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame as pg
 
@@ -9,7 +10,7 @@ from states.menu_state import MenuState
 from states.quit_state import QuitState
 
 
-def main():
+async def main():
     pg.init()
     pg.font.init()
 
@@ -52,6 +53,8 @@ def main():
                 print(f"Framerate last 5 secs: {clock.get_fps():.2f}")
                 last_frame_rate_print = time.time()
 
+        await asyncio.sleep(0)  # Yield control to the event loop
+
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:
@@ -74,4 +77,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
