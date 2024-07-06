@@ -28,6 +28,10 @@ class MenuState(State):
         settings = Settings()
         screen = settings.screen
 
+        # Create a 2nd screen with alpha to draw the stars with transparency
+        self.screen_alpha = pg.Surface((screen.get_width(), screen.get_height()), pg.SRCALPHA)
+        self.screen_alpha.set_alpha(64)
+
         self._ship_img = pg.image.load(path.join(dir_images, f"space_ship3_0green.png"))
         image_aspect = self._ship_img.get_height() / self._ship_img.get_width()
         image_height = settings.font_size_base * 3
@@ -129,6 +133,17 @@ class MenuState(State):
             self.menu_items['immortal_off'].is_visible = False
 
     def handle_events(self, events: List[pg.event.Event], frame_time):
+        self.star_timer += 1
+
+        if self.star_timer >= 20:
+            self.stars.append(Star())
+            self.star_timer = 0
+
+        for star in self.stars.copy():
+            star.move()
+            if star.is_off_screen():
+                self.stars.remove(star)
+
         for event in events:
             if not event.type == pg.KEYDOWN:
                 continue
@@ -204,17 +219,11 @@ class MenuState(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
 
-        # Update and draw stars
-        self.star_timer += 1
-        if self.star_timer >= 20:
-            self.stars.append(Star())
-            self.star_timer = 0
-
+        # Draw transparent stars – clear screen with transparent black
+        self.screen_alpha.fill((0, 0, 0, 0))
         for star in self.stars:
-            star.move()
-            star.draw()
-            if star.is_off_screen():
-                self.stars.remove(star)
+            star.draw_ex(screen_=self.screen_alpha)
+        screen.blit(self.screen_alpha, (0, 0))
 
         total_size_menu_title = self._title_word1.get_width() + self._ship_img.get_width() + self._title_word2.get_width()
         word1_pos_x = screen.get_width() / 2 - total_size_menu_title / 2
@@ -229,4 +238,4 @@ class MenuState(State):
             mi.draw()
 
     def get_frame_rate(self) -> int:
-        return 20
+        return 30
