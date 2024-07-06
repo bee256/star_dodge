@@ -47,7 +47,10 @@ class Ship:
         for col in color_set:
             self.ship_by_color[col] = pg.transform.smoothscale(self.ship_by_color[col], (self.width, self.height))
 
-        self.mask = pg.mask.from_surface(self.ship_by_color['green'])
+        # load image for mask with no fire so if a star touches the fire it is not counted as a hit.
+        ship_image_no_fire =  pg.image.load(path.join(dir_images, "space_ship3_no_fire.png"))
+        ship_image_no_fire = pg.transform.smoothscale(ship_image_no_fire, (self.width, self.height))
+        self.mask = pg.mask.from_surface(ship_image_no_fire)
         self.x = round(screen.get_width() / 2 - self.width / 2)
         self.y = round(screen.get_height() - self.height - offset)
         settings = Settings()
