@@ -29,14 +29,14 @@ class CreditsState(State):
         self._title = self._title_font.render("CREDITS", True, LIGHT_BLUE)
 
         self._credits = [
-            ("AG-Leiter:", "Bernd Engist"),
-            ("AG-Teilnehmer:", "Lena Lissner"),
-            ("","Elias Hoque"),
-            ("","Moritz Moser"),
-            ("","Moritz Oswald"),
-            ("","Carl Engist"),
-            ("","Jona Thielgen"),
-            ("","Luca Koch"),
+            ("AG-Leiter:", "Bernd"),
+            ("AG-Teilnehmer:", "1"),
+            ("","2"),
+            ("","3"),
+            ("","4"),
+            ("","5"),
+            ("","6"),
+            ("","7"),
 
             ("Special Thanks to:", "All Players!")
         ]
