@@ -11,6 +11,7 @@ from .game_state import GameState
 from .quit_state import QuitState
 from .credits_state import CreditsState
 from .highscore_state import HighscoreState
+from .highscore_server_state import HighscoreServerState
 from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, GRAY
 from utils.paths import dir_sound, dir_fonts, dir_images
@@ -210,6 +211,8 @@ class MenuState(State):
         elif self.active_item == 'credits':
             return CreditsState(self)
         elif self.active_item == 'highscores':
+            if settings.score_server_host:
+                return HighscoreServerState(self)
             return HighscoreState(self)
         elif self.active_item == 'immortal_off':
             settings.immortal_mode = False
