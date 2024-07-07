@@ -53,7 +53,7 @@ async def main():
                 print(f"Framerate last 5 secs: {clock.get_fps():.2f}")
                 last_frame_rate_print = time.time()
 
-        await asyncio.sleep(0)  # Yield control to the event loop
+        await asyncio.sleep(0)  # Yield control to the asyncio event loop
 
         events = pg.event.get()
         for event in events:

@@ -8,8 +8,8 @@ from typing import List
 
 from states.state import State
 from states.helper import Instructions
-from utils.colors import LIGHT_BLUE, WHITE, GRAY, DARK_RED
-from utils.paths import dir_fonts
+from utils.colors import LIGHT_BLUE, WHITE, LIGHT_GRAY
+from utils.paths import dir_fonts, dir_sound
 from utils.settings import Settings
 
 settings: Settings
@@ -24,6 +24,9 @@ class HighscoreServerState(State):
         settings = Settings()
         screen = settings.screen
 
+        self.sound_new_highscore = pg.mixer.Sound(path.join(dir_sound, 'winning-218995.mp3'))
+        self.sound_new_score = pg.mixer.Sound(path.join(dir_sound, 'success-1-6297.mp3'))
+
         self._list_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 1.2))
         self._list_font_small = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 0.9))
         self._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
@@ -31,6 +34,8 @@ class HighscoreServerState(State):
         self._instructions = Instructions("Escape key to return to main menu")
         self._last_query_time = 0
         self._scores = []
+        self._previous_scores = None
+        self._new_scores = []
         half_screen_width = screen.get_width() / 2
         col_width = half_screen_width / 20.0
         self.x_rank = round(2.5 * col_width)
@@ -52,10 +57,12 @@ class HighscoreServerState(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
         title_x = screen.get_width() / 2 - self._title.get_width() / 2
-        title_y = screen.get_height() / 8
+        title_y = screen.get_height() / 10
         screen.blit(self._title, (title_x, title_y))
 
-        y_base = title_y + self._title.get_height() + screen.get_height() / 20
+        y_base = title_y + self._title.get_height() + screen.get_height() / 17
+        pg.draw.line(screen, LIGHT_GRAY, (screen.get_width() / 2, y_base), (screen.get_width() / 2, screen.get_height() - screen.get_height() / 9.5), 3)
+
         # draw the first 10 scores on the left side of the screen
         self.draw_scores(0, y_base, self._scores[:10])
         # draw the 2nd 10 scores on the right side of the screen
@@ -87,19 +94,20 @@ class HighscoreServerState(State):
     def get_frame_rate(self) -> int:
         return 20
 
-    async def poll_high_score_server(self):
+    async def poll_high_score_server(self, callback=None, num_recs: int = 20):
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(f'http://{settings.score_server_host}:{settings.score_server_port}/get_scores') as response:
+                async with session.get(
+                        f'http://{settings.score_server_host}:{settings.score_server_port}/get_scores?n={num_recs}') as response:
                     response.raise_for_status()
                     self._scores = await response.json()
                     message = "Successfully queried scores from server"
                     if settings.verbose:
                         print(f"{message} http://{settings.score_server_host}:{settings.score_server_port}: {self._scores}")
                         print(self._scores)
-                    # callback({'rc': 0, 'message': message})
+                    if callback is not None:
+                        callback()
 
             except Exception as err:
                 message = f"Could not get scores from server: {err}"
                 print(message, file=sys.stderr)
-                # callback({'rc': 1, 'message': message})
