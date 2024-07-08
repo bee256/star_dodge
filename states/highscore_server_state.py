@@ -45,7 +45,7 @@ class HighscoreServerState(State):
     def handle_events(self, events: List[pg.event.Event], frame_time):
         # poll the highscores every 5 seconds
         if time.time() - self._last_query_time >= 5:
-            asyncio.create_task(self.poll_high_score_server())
+            asyncio.create_task(self.poll_high_score_server(self.on_new_results))
             self._last_query_time = time.time()
 
         for event in events:
@@ -76,20 +76,42 @@ class HighscoreServerState(State):
         x_score = x_base + self.x_score
 
         for num, score in enumerate(scores_list):
-            rank = self._list_font.render(f"{num + 1 + rank_offset}", 1, LIGHT_BLUE)
+            color = LIGHT_BLUE
+            if self._new_scores:
+                if score in self._new_scores:
+                    color = WHITE
+            rank = self._list_font.render(f"{num + 1 + rank_offset}", 1, color)
             screen.blit(rank, (x_rank - rank.get_width(), y_pos))
-            player = self._list_font.render(score['name'], 1, LIGHT_BLUE)
+            player = self._list_font.render(score['name'], 1, color)
             screen.blit(player, (x_player, y_pos))
             score_text = f"{score['score']:.2f}"
             score_left, score_right = score_text.split('.')
-            comma = self._list_font.render(',', 1, LIGHT_BLUE)
+            comma = self._list_font.render(',', 1, color)
             screen.blit(comma, (x_score, y_pos))
-            score_left = self._list_font.render(score_left, 1, LIGHT_BLUE)
+            score_left = self._list_font.render(score_left, 1, color)
             screen.blit(score_left, (x_score - score_left.get_width(), y_pos))
-            score_right = self._list_font_small.render(score_right, 1, LIGHT_BLUE)
+            score_right = self._list_font_small.render(score_right, 1, color)
             y_pos_for_decimal = y_pos + score_right.get_height() * 0.24
             screen.blit(score_right, (x_score + comma.get_width(), y_pos_for_decimal))
             y_pos += rank.get_height()
+
+    def on_new_results(self):
+        # new results just came in, let us look for the difference to previous results
+        if self._previous_scores is None:
+            self._previous_scores = self._scores
+            return
+
+        # We have new results and previous results → lets compare and figure out the new ones
+        self._new_scores = []
+
+        for item in self._scores:
+            if item not in self._previous_scores:
+                self._new_scores.append(item)
+
+        self._previous_scores = self._scores
+
+        if settings.verbose:
+            print(f"In on_new_results: {self._new_scores}")
 
     def get_frame_rate(self) -> int:
         return 20
