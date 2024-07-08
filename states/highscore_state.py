@@ -62,7 +62,7 @@ class HighscoreState(State):
         for idx, score_entry in enumerate(scores[:max_entries]):  # Begrenze auf die max_entries Einträge
             rank_text = self.entry_font.render(str(idx + 1), True, WHITE)
             name_text = self.entry_font.render(score_entry['name'], True, WHITE)
-            score_text = self.entry_font.render(str(int(score_entry['score'])), True, WHITE)
+            score_text = self.entry_font.render(f"{score_entry['score']:.2f}", True, WHITE)
             date_text = self.entry_font.render(score_entry['date'].strftime('%Y-%m-%d '), True, WHITE)
             self.screen.blit(rank_text, (col_x[0], y))
             self.screen.blit(name_text, (col_x[1], y))
@@ -81,7 +81,7 @@ def load_highscores():
             reader = csv.reader(file)
             for row in reader:
                 if len(row) >= 3:  # Überprüfen, ob die Zeile mindestens drei Elemente hat
-                    highscore = {'name': row[0], 'score': int(float(row[1])), 'date': datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S')}
+                    highscore = {'name': row[0], 'score': float(row[1]), 'date': datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S')}
                     highscores.append(highscore)
                 else:
                     print(f"Ignoriere ungültige Zeile: {row}")  # Optional: Melden Sie ungültige Zeilen

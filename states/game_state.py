@@ -295,7 +295,7 @@ class GameState(State):
 
     def save_highscore(self):
         # Highscore als Tuple (Spielername, Zeit, Datum) speichern
-        highscore = (settings.player_name, int(self.elapsed_time), datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        highscore = (settings.player_name, self.elapsed_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print(int(self.elapsed_time))
         self.highscores.append(highscore)
         # Highscore in eine CSV-Datei schreiben

@@ -3,10 +3,7 @@ from os import path
 from typing import List
 
 from states.state import State
-from utils.colors import LIGHT_BLUE
-from utils.colors import WHITE
-from utils.colors import ORANGE
-from utils.colors import RED
+from utils.colors import LIGHT_BLUE, ORANGE, WHITE, RED
 from utils.paths import dir_fonts
 from utils.settings import Settings
 
@@ -40,7 +37,7 @@ class CreditsState(State):
 
             ("Special Thanks to:", "All Players!")
         ]
-        self._scroll_speed = 1.5
+        self._scroll_speed = 1
         self._credit_pos = self.screen.get_height()
 
     def handle_events(self, events: List[pg.event.Event], frame_time):
@@ -50,7 +47,8 @@ class CreditsState(State):
 
     def render(self):
         self.screen.blit(self.settings.background_img, (0, 0))
-        self.screen.blit(self._title, (self.screen.get_width() / 2 - self._title.get_width() / 2, self.screen.get_height() / 6))
+        title_y_pos = self.screen.get_height() / 50
+        self.screen.blit(self._title, (self.screen.get_width() / 2 - self._title.get_width() / 2, title_y_pos))
         self.scroll_credits()
         pg.display.flip()
 
@@ -59,6 +57,11 @@ class CreditsState(State):
         screen_width = self.screen.get_width()
 
         y_offset = self._credit_pos
+        title_y_pos = self.screen.get_height() / 10
+        title_height = self._title.get_height()
+        fade_out_start = title_y_pos - 50
+        fade_out_end = title_y_pos + title_height + 50
+
         for header, name in self._credits:
             header_text = self._header_font.render(header, True, ORANGE)
             name_text = self._name_font.render(name, True, WHITE)
@@ -68,20 +71,33 @@ class CreditsState(State):
             name_x = screen_width / 2 - name_text.get_width() / 2
             all_players_x = screen_width / 2 - all_players_text.get_width() / 2
 
-            if not header == "":
-                if not header == "AG-Leiter:":
-                    y_offset += name_text.get_height() + 60
+            # Calculate alpha based on position relative to fade-out region
+            if fade_out_start <= y_offset <= fade_out_end:
+                alpha = int(255 * (y_offset - fade_out_start) / (fade_out_end - fade_out_start))
+            elif y_offset < title_y_pos:
+                alpha = 0
+            else:
+                alpha = 255
+
+            header_text.set_alpha(alpha)
+            name_text.set_alpha(alpha)
+            all_players_text.set_alpha(alpha)
+
+            if header != "":
+                if header != "AG-Leiter:":
+                    y_offset += name_text.get_height() - 60
                 self.screen.blit(header_text, (header_x, y_offset))
                 y_offset += header_text.get_height() + 5
                 if name == "All Players!":
                     self.screen.blit(all_players_text, (all_players_x, y_offset))
-                elif not name == "All Players!":
+                else:
                     self.screen.blit(name_text, (name_x, y_offset))
                     y_offset += name_text.get_height() + 20
-            elif header == "":
+            else:
                 self.screen.blit(name_text, (name_x, y_offset))
                 y_offset += name_text.get_height() + 20
 
+        # Credits fortlaufend scrollen lassen
         if y_offset < 0:
             self._credit_pos = self.screen.get_height()
 
