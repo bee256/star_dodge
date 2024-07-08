@@ -104,9 +104,20 @@ class HighscoreServerState(State):
         # We have new results and previous results → lets compare and figure out the new ones
         self._new_scores = []
 
-        for item in self._scores:
+        play_new_highscore = False
+        play_new_scores = False
+        for num, item in enumerate(self._scores):
             if item not in self._previous_scores:
                 self._new_scores.append(item)
+                if num == 0:
+                    play_new_highscore = True
+                else:
+                    play_new_scores = True
+
+        if play_new_highscore:
+            pg.mixer.Sound.play(self.sound_new_highscore)
+        elif play_new_scores:
+            pg.mixer.Sound.play(self.sound_new_score)
 
         self._previous_scores = self._scores
 
