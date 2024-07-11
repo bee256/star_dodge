@@ -6,7 +6,7 @@ import csv
 from datetime import datetime
 
 from .state import State
-from .helper import Instructions
+from .helper import Message
 from elements.ship import Ship
 from elements.star import Star
 from elements.explosion import Explosion
@@ -52,7 +52,7 @@ class GameState(State):
         self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
-        self.instructions = Instructions("Avoid the stars!", "Left/Right arrow keys to move the ship",
+        self.instructions = Message("Avoid the stars!", "Left/Right arrow keys to move the ship",
                                          "Escape or Space key to pause the game")
         self.instructions_alpha = 255
         self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)
@@ -306,6 +306,6 @@ class GameState(State):
 
     def on_score_submitted(self, result):
         if settings.verbose:
-            print(f"Now in on_score_submitted with result: {result}")
+            print(f"Now in on_score_submitted() with result: {result}")
         self.submit_score_rc = result['rc']
         self.submit_score_message = result['message']

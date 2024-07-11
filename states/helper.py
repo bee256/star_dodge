@@ -7,8 +7,8 @@ from utils.colors import GRAY
 settings: Settings
 
 
-class Instructions():
-    def __init__(self, *args, color=GRAY, alpha: int = 255):
+class Message():
+    def __init__(self, *args, position='right', color=GRAY, alpha: int = 255):
         global settings
         settings = Settings()
         instructions_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 0.6))
@@ -26,7 +26,10 @@ class Instructions():
 
         line_height = self.instructions[0]['surface'].get_height()
         max_line_length = max(item['surface'].get_width() for item in self.instructions)
-        self.pos_x = settings.screen.get_width() - max_line_length - line_height
+        if position == 'right':
+            self.pos_x = settings.screen.get_width() - max_line_length - line_height
+        else:
+            self.pos_x = line_height
         num_total_items = len(args)
 
         for num, item in enumerate(self.instructions):

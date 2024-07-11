@@ -50,20 +50,21 @@ class Settings:
         self.verbose = config.get_arg('verbose')
         self.score_server_host = config.get_arg('score_server_host')
         self.score_server_port = config.get_arg('score_server_port')
-        if self.score_server_host:
-            self.ping_score_server()
 
-    def ping_score_server(self):
-        try:
-            response = requests.get(f"http://{self.score_server_host}:{self.score_server_port}/ping")
-            response.raise_for_status()
-        except Exception as err:
-            print(f"Could not ping score server at http://{self.score_server_host}:{self.score_server_port} due to error: {err}",
-                  file=sys.stderr)
-            sys.exit(1)
-        else:
-            if self.verbose:
-                print(f"Successfully pinged score server at http://{self.score_server_host}:{self.score_server_port}")
+    async def ping_score_server(self, callback):
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(f'http://{self.score_server_host}:{self.score_server_port}/ping') as response:
+                    response.raise_for_status()
+                    message = f"Successfully pinged score server {self.score_server_host}"
+                    if self.verbose:
+                        print(f"{message} at http://{self.score_server_host}:{self.score_server_port}")
+                    callback({'rc': 0, 'message': message})
+
+            except Exception as err:
+                message = f"Could not ping score server {self.score_server_host}"
+                print(f"{message} at http://{self.score_server_host}:{self.score_server_port}", file=sys.stderr)
+                callback({'rc': 1, 'message': message})
 
     async def submit_score(self, score, callback):
         if self.score_server_host is None:

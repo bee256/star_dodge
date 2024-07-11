@@ -7,7 +7,7 @@ import time
 from typing import List
 
 from states.state import State
-from states.helper import Instructions
+from states.helper import Message
 from utils.colors import LIGHT_BLUE, WHITE, LIGHT_GRAY
 from utils.paths import dir_fonts, dir_sound
 from utils.settings import Settings
@@ -31,7 +31,7 @@ class HighscoreServerState(State):
         self._list_font_small = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 0.9))
         self._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
         self._title = self._title_font.render("HIGHSCORES", 1, LIGHT_BLUE)
-        self._instructions = Instructions("Escape key to return to main menu")
+        self._instructions = Message("Escape key to return to main menu")
         self._last_query_time = 0
         self._scores = []
         self._previous_scores = None

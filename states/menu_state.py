@@ -1,9 +1,11 @@
 import pygame as pg
 from os import path
 from typing import List
+import time
+import asyncio
 
 from .state import State
-from .helper import Instructions
+from .helper import Message
 from .menu_item import MenuItem, MenuItemType
 from .set_player_state import SetPlayerState
 from .set_immortal_mode import SetImmortalMode
@@ -13,7 +15,7 @@ from .credits_state import CreditsState
 from .highscore_state import HighscoreState
 from .highscore_server_state import HighscoreServerState
 from utils.settings import Settings, Difficulty
-from utils.colors import LIGHT_BLUE, GRAY
+from utils.colors import LIGHT_BLUE, GRAY, DARK_RED, WHITE
 from utils.paths import dir_sound, dir_fonts, dir_images
 from elements.star import Star
 
@@ -29,6 +31,14 @@ class MenuState(State):
         settings = Settings()
         screen = settings.screen
 
+        # Ping the server host and display the result during start of the menu
+        self.ping_score_server_rc = None
+        self.ping_score_server_message = None
+        self.message_display = None
+        self.menu_msg_time = 0
+        if settings.score_server_host:
+            asyncio.create_task(settings.ping_score_server(self.on_score_server_ping))
+
         # Create a 2nd screen with alpha to draw the stars with transparency
         self.screen_alpha = pg.Surface((screen.get_width(), screen.get_height()), pg.SRCALPHA)
         self.screen_alpha.set_alpha(64)
@@ -42,10 +52,9 @@ class MenuState(State):
         title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 2.5))
         self._title_word1 = title_font.render("STAR ", 1, LIGHT_BLUE)
         self._title_word2 = title_font.render(" DODGE", 1, LIGHT_BLUE)
-        self._instructions = Instructions("Arrow keys to move", "Return/Enter to select")
+        self._instructions = Message("Arrow keys to move", "Return/Enter to select")
         self.menu_sound_move = pg.mixer.Sound(file=path.join(dir_sound, 'menu-move.wav'))
         self.menu_sound_select = pg.mixer.Sound(file=path.join(dir_sound, 'menu-select.wav'))
-        MenuState._class_is_initialised = True
 
         self.menu_items: {MenuItem} = {}
 
@@ -222,6 +231,9 @@ class MenuState(State):
     def render(self):
         screen.blit(settings.background_img, (0, 0))
 
+        if self.ping_score_server_rc is not None:
+            self.draw_ping_message()
+
         # Draw transparent stars – clear screen with transparent black
         self.screen_alpha.fill((0, 0, 0, 0))
         for star in self.stars:
@@ -240,5 +252,23 @@ class MenuState(State):
         for mi in self.menu_items.values():
             mi.draw()
 
+    def draw_ping_message(self):
+        if self.ping_score_server_rc == 0:
+            self.message_display = Message(self.ping_score_server_message, position='left', color=WHITE, alpha=64)
+        else:
+            self.message_display = Message(self.ping_score_server_message, position='left', color=DARK_RED)
+        if self.menu_msg_time == 0:
+            # initialise to time so we can stop at 5 secs
+            self.menu_msg_time = time.time()
+        if time.time() - self.menu_msg_time <= 5.0:
+            self.message_display.draw()
+        else:
+            self.ping_score_server_rc = None
+
     def get_frame_rate(self) -> int:
         return 30
+
+    # Callback for the async ping call at menu initialisation
+    def on_score_server_ping(self, result):
+        self.ping_score_server_rc = result['rc']
+        self.ping_score_server_message = result['message']

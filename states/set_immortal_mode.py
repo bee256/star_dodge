@@ -4,7 +4,7 @@ import time
 from typing import List
 
 from states.state import State
-from states.helper import Instructions
+from states.helper import Message
 from utils.colors import LIGHT_BLUE, WHITE, GRAY, DARK_RED, DARK_GREEN
 from utils.paths import dir_fonts
 from utils.settings import Settings
@@ -25,7 +25,7 @@ class SetImmortalMode(State):
 
         self._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), round(settings.font_size_base * 1.5))
         self._title_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), settings.font_size_base * 2)
-        self._instructions = Instructions("So, you’ve found the immortal cheet screen … but now you need the code …",
+        self._instructions = Message("So, you’ve found the immortal cheet screen … but now you need the code …",
                                           "Type the code and press Return or Enter or Escape to cancel")
         self.show_hint = None
         self._title = self._title_font.render("ENTER THE IMMORTAL CODE", 1, LIGHT_BLUE)
