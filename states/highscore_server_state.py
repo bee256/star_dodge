@@ -82,8 +82,6 @@ class HighscoreServerState(State):
                     color = WHITE
             rank = self._list_font.render(f"{num + 1 + rank_offset}", 1, color)
             screen.blit(rank, (x_rank - rank.get_width(), y_pos))
-            player = self._list_font.render(score['name'], 1, color)
-            screen.blit(player, (x_player, y_pos))
             score_text = f"{score['score']:.2f}"
             score_left, score_right = score_text.split('.')
             comma = self._list_font.render(',', 1, color)
@@ -91,6 +89,21 @@ class HighscoreServerState(State):
             score_left = self._list_font.render(score_left, 1, color)
             screen.blit(score_left, (x_score - score_left.get_width(), y_pos))
             score_right = self._list_font_small.render(score_right, 1, color)
+
+            # Make sure long player names do not overwrite the score. Apply a nice fade out effect if too long.
+            player = self._list_font.render(score['name'], 1, color)
+            # Exact size of the player surface is the x_score - x_player - score_left.get_width()
+            # I subtract player.get_height() / 3 more to make sure that even the faded out text is not going until exactly the score
+            player_surface = pg.Surface((x_score - x_player - score_left.get_width() - player.get_height() / 3, player.get_height()), pg.SRCALPHA)
+            player_surface.blit(player, (0, 0))
+            fade_width = round(player_surface.get_width() * 0.2)   # Fadeout area is 20% of total width
+            for i in range(1, fade_width+1):
+                alpha = int(255 * (1 - (i / fade_width)))
+                fade_surface = pg.Surface((1, player_surface.get_height()), pg.SRCALPHA)
+                fade_surface.fill((255, 255, 255, alpha))  # Fill with white with varying alpha
+                player_surface.blit(fade_surface, (player_surface.get_width() - fade_width + i, 0), special_flags=pg.BLEND_RGBA_MIN)
+            screen.blit(player_surface, (x_player, y_pos))
+
             y_pos_for_decimal = y_pos + score_right.get_height() * 0.24
             screen.blit(score_right, (x_score + comma.get_width(), y_pos_for_decimal))
             y_pos += rank.get_height()
