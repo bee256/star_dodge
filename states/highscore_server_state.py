@@ -94,14 +94,19 @@ class HighscoreServerState(State):
             player = self._list_font.render(score['name'], 1, color)
             # Exact size of the player surface is the x_score - x_player - score_left.get_width()
             # I subtract player.get_height() / 3 more to make sure that even the faded out text is not going until exactly the score
-            player_surface = pg.Surface((x_score - x_player - score_left.get_width() - player.get_height() / 3, player.get_height()), pg.SRCALPHA)
-            player_surface.blit(player, (0, 0))
-            fade_width = round(player_surface.get_width() * 0.2)   # Fadeout area is 20% of total width
-            for i in range(1, fade_width+1):
-                alpha = int(255 * (1 - (i / fade_width)))
-                fade_surface = pg.Surface((1, player_surface.get_height()), pg.SRCALPHA)
-                fade_surface.fill((255, 255, 255, alpha))  # Fill with white with varying alpha
-                player_surface.blit(fade_surface, (player_surface.get_width() - fade_width + i, 0), special_flags=pg.BLEND_RGBA_MIN)
+            player_surface = player
+            player_max_width = x_score - x_player - score_left.get_width() - player.get_height() / 3
+            if player.get_width() > player_max_width:
+                # apply fade out effect to the name at the end of the string
+                player_surface = pg.Surface((player_max_width, player.get_height()), pg.SRCALPHA)
+                player_surface.blit(player, (0, 0))
+                fade_width = round(player_surface.get_width() * 0.2)   # Fadeout area is 20% of total width
+                for i in range(1, fade_width+1):
+                    alpha = int(255 * (1 - (i / fade_width)))
+                    fade_surface = pg.Surface((1, player_surface.get_height()), pg.SRCALPHA)
+                    fade_surface.fill((255, 255, 255, alpha))  # Fill with white with varying alpha
+                    player_surface.blit(fade_surface, (player_surface.get_width() - fade_width + i, 0), special_flags=pg.BLEND_RGBA_MIN)
+
             screen.blit(player_surface, (x_player, y_pos))
 
             y_pos_for_decimal = y_pos + score_right.get_height() * 0.24
