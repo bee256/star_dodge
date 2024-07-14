@@ -8,6 +8,7 @@ from utils.config import Config
 from utils.settings import Settings
 from states.menu_state import MenuState
 from states.quit_state import QuitState
+from states.new_frame_rate_state import NewFrameRateState
 
 
 async def main():
@@ -66,7 +67,10 @@ async def main():
         if new_state:
             if type(new_state) is QuitState:
                 break
-            current_state = new_state
+            elif type(new_state) is NewFrameRateState:
+                pass
+            else:
+                current_state = new_state
             frame_rate = new_state.get_frame_rate()
 
         current_state.render()

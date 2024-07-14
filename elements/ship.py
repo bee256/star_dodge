@@ -41,7 +41,7 @@ class Ship:
         self.height = round(self.width * image_aspect)
         # the speed in which we move the ship is in relation to the size and thus relates to the screen as well
         self.__velocity = round(self.width / 12)
-        offset = self.height / 2
+        offset = self.height * 0.8
 
         # We scale each colored image after the color replacement and not before because of the antialiasing with smooth scale
         for col in color_set:

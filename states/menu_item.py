@@ -56,7 +56,12 @@ class MenuItem:
         self.toggle_value = True
         self.entry_value = None
 
-    def draw(self):
+    def draw(self, screen: pg.Surface = None):
+        screen_ = MenuItem._screen
+        if screen is not None:
+            # override screen if passed in draw function
+            screen_ = screen
+
         font = MenuItem._menu_font
         if not self.is_visible:
             return
@@ -66,7 +71,7 @@ class MenuItem:
         else:
             label = font.render(self.display_text, True, GRAY)
 
-        MenuItem._screen.blit(label, (self.pos_x, self.pos_y))
+        screen_.blit(label, (self.pos_x, self.pos_y))
         # the following two lines were just to show the boundaries of the menu item with a red rectangle
         # rect_position = (self.pos_x, self.pos_y, label.get_width(), label.get_height())
         # pg.draw.rect(MenuItem._screen, RED, rect_position, 1)
@@ -75,9 +80,9 @@ class MenuItem:
             pos_x = self.pos_x + label.get_width() + label.get_height() / 2
             pox_y = self.pos_y + label.get_height() / 2 - MenuItem._toggle_on.get_height() / 2
             if self.toggle_value is True:
-                MenuItem._screen.blit(MenuItem._toggle_on, (pos_x, pox_y))
+                screen_.blit(MenuItem._toggle_on, (pos_x, pox_y))
             else:
-                MenuItem._screen.blit(MenuItem._toggle_off, (pos_x, pox_y))
+                screen_.blit(MenuItem._toggle_off, (pos_x, pox_y))
         elif self.mitype == MenuItemType.ENTRY:
             pos_x = self.pos_x + label.get_width()
-            MenuItem._screen.blit(MenuItem._entry_font.render(self.entry_value, True, WHITE), (pos_x, self.pos_y))
+            screen_.blit(MenuItem._entry_font.render(self.entry_value, True, WHITE), (pos_x, self.pos_y))

@@ -43,6 +43,9 @@ class Message():
         for item in self.instructions:
             item['surface'].set_alpha(alpha)
 
-    def draw(self):
+    def draw(self, screen_: pg.Surface=None):
+        screen = settings.screen
+        if screen_ is not None:
+            screen = screen_
         for item in self.instructions:
-            settings.screen.blit(item['surface'], (self.pos_x, item['pos_y']))
+            screen.blit(item['surface'], (self.pos_x, item['pos_y']))
