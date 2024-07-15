@@ -103,7 +103,7 @@ class MenuState(State):
         self.gsa_sound_launch = pg.mixer.Sound(file=path.join(dir_sound, 'launch-85216.wav'))
         self.gsa_sound_launch.set_volume(0.4)
         self.new_game = None
-        self.gsa_frames = 30
+        self.gsa_frames = 36
         self.gsa_distance = 0
         self.gsa_acceleration = 0
         self.gsa_frame_count = 0

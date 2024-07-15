@@ -12,7 +12,7 @@ from elements.star import Star
 from elements.explosion import Explosion
 from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, DARK_RED, WHITE
-from utils.paths import dir_sound, dir_fonts
+from utils.paths import dir_sound, dir_fonts, get_highscore_path
 from utils.config import Config
 
 screen: pg.Surface
@@ -296,11 +296,9 @@ class GameState(State):
     def save_highscore(self):
         # Highscore als Tuple (Spielername, Zeit, Datum) speichern
         highscore = (settings.player_name, self.elapsed_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        print(int(self.elapsed_time))
         self.highscores.append(highscore)
         # Highscore in eine CSV-Datei schreiben
-        # TODO: create function to return a typical OS specific directory to read/write high score file
-        with open('highscores.csv', mode='a', newline='') as file:
+        with open(get_highscore_path(), mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(highscore)
         print(f'Highscore gespeichert: {highscore}')

@@ -1,11 +1,13 @@
 import csv
+import sys
+
 import pygame as pg
 from os import path
 from typing import List, Dict
 from datetime import datetime, timedelta
 from states.state import State
 from utils.colors import LIGHT_BLUE, WHITE, BLACK
-from utils.paths import dir_fonts
+from utils.paths import dir_fonts, get_highscore_path
 from utils.settings import Settings
 
 screen: pg.Surface
@@ -71,25 +73,24 @@ class HighscoreState(State):
             y += 40
 
     def get_frame_rate(self) -> int:
-        return 1
+        return 10
 
 
 def load_highscores():
     highscores = []
     try:
-        # TODO: create function to return a typical OS specific directory to read/write high score file
-        with open('highscores.csv', mode='r') as file:
+        with open(get_highscore_path(), mode='r') as file:
             reader = csv.reader(file)
             for row in reader:
                 if len(row) >= 3:  # Überprüfen, ob die Zeile mindestens drei Elemente hat
                     highscore = {'name': row[0], 'score': float(row[1]), 'date': datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S')}
                     highscores.append(highscore)
                 else:
-                    print(f"Ignoriere ungültige Zeile: {row}")  # Optional: Melden Sie ungültige Zeilen
+                    print(f"load_highscores(): ignore invalid line: {row}", file=sys.stderr)
     except FileNotFoundError:
         print("Keine Highscores gefunden.")
     except ValueError as e:
-        print(f"Fehler beim Konvertieren eines Highscores: {e}")
+        print(f"Fehler beim Konvertieren eines Highscores: {e}", file=sys.stderr)
 
     return highscores
 
