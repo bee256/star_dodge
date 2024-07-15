@@ -299,6 +299,7 @@ class GameState(State):
         print(int(self.elapsed_time))
         self.highscores.append(highscore)
         # Highscore in eine CSV-Datei schreiben
+        # TODO: create function to return a typical OS specific directory to read/write high score file
         with open('highscores.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(highscore)

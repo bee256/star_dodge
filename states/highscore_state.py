@@ -77,6 +77,7 @@ class HighscoreState(State):
 def load_highscores():
     highscores = []
     try:
+        # TODO: create function to return a typical OS specific directory to read/write high score file
         with open('highscores.csv', mode='r') as file:
             reader = csv.reader(file)
             for row in reader:
