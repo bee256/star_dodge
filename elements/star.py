@@ -54,7 +54,8 @@ class Star:
 
         star_x = random.randint(0, screen.get_width() - star_w)
         self.star_rect = pg.Rect(star_x, -star_h, star_w, star_h)
-        self.color = STAR_COLOR_PALETTE[random.randint(0, len(STAR_COLOR_PALETTE) - 1)]
+        # self.color = STAR_COLOR_PALETTE[random.randint(0, len(STAR_COLOR_PALETTE) - 1)]
+        self.color = get_random_star_color()
         self.velocity = random.randint(star_vel_min, star_vel_max)
 
     def draw(self):

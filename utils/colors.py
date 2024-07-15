@@ -1,3 +1,5 @@
+import random
+
 # base colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -18,11 +20,34 @@ ORANGE = (255, 165, 0)
 PURPLE = (128, 0, 128)
 PINK = (255, 182, 193)
 
+star_colors_ranges = {
+    "blue": ((150, 200, 255), (220, 240, 255)),
+    "blue-white": ((170, 190, 255), (200, 220, 255)),
+    "white": ((230, 230, 255), (255, 255, 255)),
+    "yellow-white": ((255, 250, 210), (255, 255, 240)),
+    "yellow": ((255, 245, 160), (255, 250, 200)),
+    "orange": ((255, 200, 100), (255, 230, 180)),
+    "red": ((255, 100, 50), (255, 150, 100)),
+}
 
+
+def get_random_star_color():
+    keys = list(star_colors_ranges.keys())
+    star_category = random.choice(keys)
+
+    color1 = star_colors_ranges[star_category][0]
+    color2 = star_colors_ranges[star_category][1]
+
+    r = random.randint(color1[0], color2[0])
+    g = random.randint(color1[1], color2[1])
+    b = random.randint(color1[2], color2[2])
+
+    return r, g, b
 
 # Q: What are typical ranges of RGB values of the colors of stars?
 #
-# ChatGPT: Stars display a wide range of colors based on their temperature, which can be represented by RGB values. Here are typical ranges for the colors of stars:
+# ChatGPT: Stars display a wide range of colors based on their temperature, which can be represented
+# by RGB values. Here are typical ranges for the colors of stars:
 #
 # 1. **Blue Stars (Hottest)**
 #    - Temperature: 25,000 - 50,000 K
