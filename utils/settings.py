@@ -6,8 +6,6 @@ import pygame as pg
 from os import path
 from enum import Enum
 
-import requests
-
 from utils.config import Config
 from utils.paths import dir_images, dir_sound
 
