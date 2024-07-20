@@ -61,7 +61,10 @@ class StageManager:
                 self.final_stage_final_create_duration = True
         return False
 
-    def get_stage_str(self):
+    def get_stage_num(self) -> int:
+        return self.current_stage + 1
+
+    def get_stage_str(self) -> str:
         if self.current_stage + 1 == len(self.stages):
             return "FINAL STAGE"
         return str(f"STAGE {self.current_stage + 1}")

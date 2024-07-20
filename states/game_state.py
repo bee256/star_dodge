@@ -36,7 +36,7 @@ class GameState(State):
         self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
-        self.instructions = Message("Avoid the stars!", "Left/Right arrow keys to move the ship",
+        self.instructions = Message("Avoid the stars!", "Left/Right arrow keys to move the ship (+Shit → slow)",
                                     "Escape or Space key to pause the game")
         self.instructions_alpha = 255
         self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)
@@ -88,10 +88,14 @@ class GameState(State):
                 return None  # keep game going until end of game over animation and music fade out
 
         keys = pg.key.get_pressed()
+        mods = pg.key.get_mods()
+        is_move_slow = False
+        if mods & pg.KMOD_SHIFT:
+            is_move_slow = True
         if keys[pg.K_LEFT]:
-            self.ship.move_left()
+            self.ship.move_left(is_move_slow)
         if keys[pg.K_RIGHT]:
-            self.ship.move_right()
+            self.ship.move_right(is_move_slow)
         if keys[pg.K_ESCAPE] or keys[pg.K_SPACE]:
             pg.mixer.music.pause()
             self.pause_start = time.time()
@@ -160,7 +164,7 @@ class GameState(State):
                 self.submit_score_message = f"Submitting your score {self.elapsed_time:.2f} to score server"
                 # print("Now calling asyncio.create_task(settings.submit_score())")
                 # start = time.time()
-                asyncio.create_task(settings.submit_score(self.elapsed_time, self.on_score_submitted))
+                asyncio.create_task(settings.submit_score(self.elapsed_time, self.stage_manager.get_stage_num(), self.on_score_submitted))
                 # duration = (time.time() - start) * 1000
                 # print(f"Call of asyncio.create_task took {duration} milliseconds")
             return None

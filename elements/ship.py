@@ -60,13 +60,21 @@ class Ship:
     def draw(self, color: str):
         self.screen.blit(self.ship_by_color[color], (self.x, self.y))
 
-    def move_left(self):
-        if self.x - self.__velocity >= 0:
-            self.x -= self.__velocity
+    def move_left(self, is_move_slow: bool = False):
+        move_speed = self.get_move_speed(is_move_slow)
+        if self.x - move_speed >= 0:
+            self.x -= move_speed
 
-    def move_right(self):
-        if self.x + self.__velocity + self.width <= self.screen.get_width():
-            self.x += self.__velocity
+    def move_right(self, is_move_slow: bool = False):
+        move_speed = self.get_move_speed(is_move_slow)
+        if self.x + move_speed + self.width <= self.screen.get_width():
+            self.x += move_speed
+
+    def get_move_speed(self, is_move_slow: bool = False) -> int:
+        move_speed = self.__velocity
+        if is_move_slow:
+            move_speed = round(move_speed / 2)
+        return move_speed
 
     def draw_all_ships_for_test(self):
         i = 0

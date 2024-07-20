@@ -64,7 +64,7 @@ class Settings:
                 print(f"{message} at http://{self.score_server_host}:{self.score_server_port}", file=sys.stderr)
                 callback({'rc': 1, 'message': message})
 
-    async def submit_score(self, score, callback):
+    async def submit_score(self, score, stage, callback):
         if self.score_server_host is None:
             message = "Cannot submit score since server host is not defined"
             print(message, file=sys.stderr)
@@ -78,6 +78,7 @@ class Settings:
                 data = {
                     'name': self.player_name,
                     'score': score,
+                    'stage': stage,
                     'nickname': None,
                     'email': None,
                     'computer_name': computer_name,
