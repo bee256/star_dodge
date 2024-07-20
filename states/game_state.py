@@ -36,7 +36,7 @@ class GameState(State):
         self.info_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), round(settings.font_size_base * 0.6))
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
-        self.instructions = Message("Avoid the stars!", "Left/Right arrow keys to move the ship (+Shit → slow)",
+        self.instructions = Message("Avoid the stars!", "Arrow keys to move the ship [+Shift → slow]",
                                     "Escape or Space key to pause the game")
         self.instructions_alpha = 255
         self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)

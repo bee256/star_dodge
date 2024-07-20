@@ -18,6 +18,7 @@ class MenuItem:
     _screen: pg.Surface
     _toggle_on: pg.Surface
     _toggle_off: pg.Surface
+    _padlock_img: pg.Surface
 
     @staticmethod
     def initialise(screen: pg.Surface, menu_font_size):
@@ -28,11 +29,15 @@ class MenuItem:
         MenuItem._menu_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Bold.ttf'), menu_font_size)
         MenuItem._entry_font = pg.font.Font(path.join(dir_fonts, 'SpaceGrotesk-Regular.ttf'), menu_font_size)
         MenuItem._toggle_on = pg.image.load(path.join(dir_images, 'toggle_on.png'))
-        toggle_height = menu_font_size * 0.8
-        toggle_width = toggle_height * MenuItem._toggle_on.get_width() / MenuItem._toggle_on.get_height()
-        MenuItem._toggle_on = pg.transform.smoothscale(MenuItem._toggle_on, (toggle_width, toggle_height))
+        img_height = menu_font_size * 0.8
+        img_width = img_height * MenuItem._toggle_on.get_width() / MenuItem._toggle_on.get_height()
+        MenuItem._toggle_on = pg.transform.smoothscale(MenuItem._toggle_on, (img_width, img_height))
         MenuItem._toggle_off = pg.image.load(path.join(dir_images, 'toggle_off.png'))
-        MenuItem._toggle_off = pg.transform.smoothscale(MenuItem._toggle_off, (toggle_width, toggle_height))
+        MenuItem._toggle_off = pg.transform.smoothscale(MenuItem._toggle_off, (img_width, img_height))
+
+        MenuItem._padlock_img = pg.image.load(path.join(dir_images, "icons8-lock.png"))
+        img_width = img_height * MenuItem._padlock_img.get_width() / MenuItem._padlock_img.get_height()
+        MenuItem._padlock_img = pg.transform.smoothscale(MenuItem._padlock_img, (img_width, img_height))
 
         MenuItem._class_is_initialised = True
 
@@ -44,13 +49,14 @@ class MenuItem:
         label = MenuItem._menu_font.render(text, True, GRAY)
         return label.get_width(), label.get_height()
 
-    def __init__(self, name: str, display_text: str, mitype: MenuItemType, position: (int, int), is_visible: bool):
+    def __init__(self, name: str, display_text: str, mitype: MenuItemType, position: (int, int), is_visible: bool = True, is_enabled: bool = True):
         self.name = name
         self.display_text = display_text
         self.mitype = mitype
         self.pos_x = position[0]
         self.pos_y = position[1]
         self.is_visible = is_visible
+        self.is_enabled = is_enabled
         self.is_active = False
 
         self.toggle_value = True
@@ -86,3 +92,8 @@ class MenuItem:
         elif self.mitype == MenuItemType.ENTRY:
             pos_x = self.pos_x + label.get_width()
             screen_.blit(MenuItem._entry_font.render(self.entry_value, True, WHITE), (pos_x, self.pos_y))
+
+        if not self.is_enabled:
+            pos_x = self.pos_x + label.get_width() + label.get_height() / 3
+            pox_y = self.pos_y + label.get_height() / 2 - MenuItem._toggle_on.get_height() / 2
+            screen_.blit(MenuItem._padlock_img, (pos_x, pox_y))

@@ -47,11 +47,11 @@ class MenuState(State):
         self.screen_alpha_stars = pg.Surface((screen.get_width(), screen.get_height()), pg.SRCALPHA)
         self.screen_alpha_stars.set_alpha(64)
 
-        self._ship_img_with_fire = pg.image.load(path.join(dir_images, f"space_ship3_0green.png"))
+        self._ship_img_with_fire = pg.image.load(path.join(dir_images, "space_ship3_0green.png"))
         image_aspect = self._ship_img_with_fire.get_height() / self._ship_img_with_fire.get_width()
         image_height = settings.font_size_base * 3
         self._ship_img_with_fire = pg.transform.smoothscale(self._ship_img_with_fire, (image_height / image_aspect, image_height))
-        self._ship_img_no_fire = pg.image.load(path.join(dir_images, f"space_ship3_no_fire.png"))
+        self._ship_img_no_fire = pg.image.load(path.join(dir_images, "space_ship3_no_fire.png"))
         self._ship_img_no_fire = pg.transform.smoothscale(self._ship_img_no_fire, (image_height / image_aspect, image_height))
 
         MenuItem.initialise(screen, round(settings.font_size_base * 1.2))
@@ -78,24 +78,27 @@ class MenuState(State):
         grid_y = screen.get_height() * 0.37
         # grid_offset_y = SCREEN.get_height() / 16
         grid_offset_y = settings.font_size_base * 2
-        self.menu_items['play'] = MenuItem('play', 'PLAY GAME', MenuItemType.SELECT, (col_left_x, grid_y), True)
-        self.menu_items['resume'] = MenuItem('resume', 'RESUME GAME', MenuItemType.SELECT, (col_right_x, grid_y), False)
+        self.menu_items['play'] = MenuItem('play', 'PLAY GAME', MenuItemType.SELECT, (col_left_x, grid_y))
+        self.menu_items['resume'] = MenuItem('resume', 'RESUME GAME', MenuItemType.SELECT, (col_right_x, grid_y), is_visible=False)
         grid_y += grid_offset_y
-        self.menu_items['player'] = MenuItem('player', 'PLAYER: ', MenuItemType.ENTRY, (col_left_x, grid_y), True)
+        self.menu_items['player'] = MenuItem('player', 'PLAYER: ', MenuItemType.ENTRY, (col_left_x, grid_y))
         self.menu_items['player'].entry_value = settings.player_name
         grid_y += grid_offset_y
-        self.menu_items['level'] = MenuItem('level', 'LEVEL: NORMAL', MenuItemType.SELECT, (col_left_x, grid_y), True)
+        self.menu_items['level'] = MenuItem('level', 'LEVEL: NORMAL', MenuItemType.SELECT, (col_left_x, grid_y))
         grid_y += grid_offset_y
-        self.menu_items['sound'] = MenuItem('sound', 'SOUND', MenuItemType.TOGGLE, (col_left_x, grid_y), True)
-        self.menu_items['music'] = MenuItem('music', 'MUSIC', MenuItemType.TOGGLE, (col_right_x, grid_y), True)
+        self.menu_items['sound'] = MenuItem('sound', 'SOUND', MenuItemType.TOGGLE, (col_left_x, grid_y))
+        self.menu_items['music'] = MenuItem('music', 'MUSIC', MenuItemType.TOGGLE, (col_right_x, grid_y))
         grid_y += grid_offset_y
-        self.menu_items['highscores'] = MenuItem('highscores', 'HIGHSCORES', MenuItemType.SELECT, (col_left_x, grid_y), True)
-        self.menu_items['credits'] = MenuItem('credits', 'CREDITS', MenuItemType.SELECT, (col_right_x, grid_y), True)
+        self.menu_items['highscores'] = MenuItem('highscores', 'HIGHSCORES', MenuItemType.SELECT, (col_left_x, grid_y))
+        self.menu_items['credits'] = MenuItem('credits', 'CREDITS', MenuItemType.SELECT, (col_right_x, grid_y))
         grid_y += grid_offset_y
-        self.menu_items['exit'] = MenuItem('exit', 'EXIT', MenuItemType.SELECT, (col_left_x, grid_y), True)
-        self.menu_items['immortal_off'] = MenuItem('immortal_off', 'IMMORTAL OFF', MenuItemType.SELECT, (col_right_x, grid_y), False)
+        self.menu_items['exit'] = MenuItem('exit', 'EXIT', MenuItemType.SELECT, (col_left_x, grid_y))
+        self.menu_items['immortal_off'] = MenuItem('immortal_off', 'IMMORTAL OFF', MenuItemType.SELECT, (col_right_x, grid_y), is_visible=False)
         self.active_item = 'play'
         self.__set_menu_item_active(self.active_item)
+        if settings.score_server_host:
+            # disable the level menu if we run in score server mode
+            self.menu_items['level'].is_enabled = False
 
         self.running_game = None
         self.last_keydown_events = []
@@ -135,6 +138,9 @@ class MenuState(State):
         new_active_item = keys[next_index]
         self.__set_menu_item_active(new_active_item)
         if not self.menu_items[new_active_item].is_visible:
+            self.__move_active_item(direction)
+            return
+        if not self.menu_items[new_active_item].is_enabled:
             self.__move_active_item(direction)
             return
 
