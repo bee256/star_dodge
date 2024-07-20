@@ -24,7 +24,7 @@ def get_data_dir():
     else:  # Linux and other UNIX-like systems
         data_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
     data_dir = os.path.join(data_dir, 'StarDodge')
-    os.makedirs(get_data_dir(), exist_ok=True)
+    os.makedirs(data_dir, exist_ok=True)
     return data_dir
 
 
