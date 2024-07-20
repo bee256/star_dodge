@@ -13,7 +13,7 @@ from elements.star import Star
 from elements.explosion import Explosion
 from utils.settings import Settings, Difficulty
 from utils.colors import LIGHT_BLUE, DARK_RED, WHITE, LIGHT_GRAY
-from utils.paths import dir_sound, dir_fonts, get_highscore_path
+from utils.paths import dir_sound, dir_fonts, get_highscore_path, get_data_dir, sanitize_filename
 from utils.config import Config
 
 screen: pg.Surface
@@ -37,7 +37,7 @@ class GameState(State):
         self.lost_text = self.lost_font.render("RAUMSCHIFF KAPUTT!", 1, DARK_RED)
         immortal_text = self.lost_font.render("IMMORTAL MODE", 1, WHITE)
         self.instructions = Message("Avoid the stars!", "Left/Right arrow keys to move the ship",
-                                         "Escape or Space key to pause the game")
+                                    "Escape or Space key to pause the game")
         self.instructions_alpha = 255
         self.immortal_text = pg.Surface((immortal_text.get_width(), immortal_text.get_height()), pg.SRCALPHA)
         self.immortal_text.blit(immortal_text, (0, 0))
@@ -101,6 +101,12 @@ class GameState(State):
             # return in pause mode
             self.menu_state.set_running_game(self)
             return self.menu_state
+        if keys[pg.K_s] and pg.key.get_mods() & pg.KMOD_META:
+            formatted_date_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+            screenshot_filename = sanitize_filename(f"screenshot_{settings.player_name}_{formatted_date_time}.png")
+            screenshot_filename = path.join(get_data_dir(), screenshot_filename)
+            pg.image.save(screen, screenshot_filename)
+            print(f"Screenshot saved as {screenshot_filename}")
 
         if self.pause_start:
             self.start_time += time.time() - self.pause_start
@@ -180,7 +186,6 @@ class GameState(State):
 
         if self.arg_store_time_num_stars_csv:
             if self.elapsed_time >= self.star_count_time:
-
                 self.stars_on_screen_by_time.append((self.elapsed_time, len(self.stars),
                                                      self.stage_manager.current_stage + 1,
                                                      self.stage_manager.get_current_create_duration()))
