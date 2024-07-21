@@ -4,6 +4,7 @@ import random
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+LIGHT_RED = (255, 64, 64)
 GREEN = (0, 255, 0)
 DARK_GREEN = (0, 200, 0)
 BLUE = (0, 0, 255)

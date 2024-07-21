@@ -1,3 +1,4 @@
+import os
 import sys
 import socket
 import aiohttp
@@ -32,6 +33,9 @@ class Settings:
             raise ValueError("Screen parameter is required during the first initialization.")
         else:
             self.screen = screen
+        config = Config()
+        self.verbose = config.get_arg('verbose')
+        self._load_version_info()
         self.background_img: pg.Surface
         self.font_size_base: int
         self.play_music = True
@@ -44,8 +48,6 @@ class Settings:
         self.background_img = pg.transform.scale(pg.image.load(path.join(dir_images, 'background.jpeg')),
                                                  (self.screen.get_width(), self.screen.get_height()))
         self.font_size_base = round(self.screen.get_height() / 25)
-        config = Config()
-        self.verbose = config.get_arg('verbose')
         self.score_server_host = config.get_arg('score_server_host')
         self.score_server_port = config.get_arg('score_server_port')
 
@@ -78,6 +80,7 @@ class Settings:
                 data = {
                     'name': self.player_name,
                     'score': score,
+                    'level': self.difficulty.value,
                     'stage': stage,
                     'nickname': None,
                     'email': None,
@@ -99,3 +102,39 @@ class Settings:
                 message = f"Could not submit score {score:.2f} of player {self.player_name} to server: {err}"
                 print(message, file=sys.stderr)
                 callback({'rc': 1, 'message': message})
+
+    def _load_version_info(self):
+        import importlib.util
+
+        module_name = 'version_info'
+        # version_info.py is expected in same directory as settings.py
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, 'version_info.py')
+
+        self.app_version = None
+        self.git_commit = None
+        self.git_commit_date = None
+        self.git_branch = None
+
+        # Check if the file exists
+        if os.path.exists(file_path):
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
+            if self.verbose:
+                print(f"Module {module_name} loaded successfully.")
+
+            # Conditionally use variables
+            if hasattr(module, '__version__'):
+                self.app_version = getattr(module, '__version__')
+            if hasattr(module, '__commit__'):
+                self.git_commit = getattr(module, '__commit__')
+            if hasattr(module, '__commit_date__'):
+                self.git_commit_date = getattr(module, '__commit_date__')
+            if hasattr(module, '__branch__'):
+                self.git_branch = getattr(module, '__branch__')
+
+        else:
+            if self.verbose:
+                print(f"File {file_path} does not exist.")
