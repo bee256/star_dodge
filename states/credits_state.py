@@ -11,7 +11,7 @@ from typing import List
 from states.helper import Message
 from states.state import State
 from utils.colors import LIGHT_BLUE, ORANGE, WHITE, RED, LIGHT_RED
-from utils.paths import dir_fonts, dir_images
+from utils.paths import dir_fonts, dir_data_no_git
 from utils.settings import Settings
 
 
@@ -82,9 +82,7 @@ class CreditsState(State):
         # Texte
         self._title = self.title_font.render("CREDITS", True, LIGHT_BLUE)
 
-        main_program_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-        # Define the path to the JSON file relative to the script directory
-        sw_ag_json = os.path.join(main_program_dir, 'data_no_git', 'sw_ag.json')
+        sw_ag_json = os.path.join(dir_data_no_git, 'data_no_git', 'sw_ag.json')
 
         sw_ag_names = None
         try:
