@@ -82,11 +82,6 @@ class CreditsState(State):
         # Texte
         self._title = self.title_font.render("CREDITS", True, LIGHT_BLUE)
 
-        self._credits_img = pg.image.load(path.join(dir_images, "start_dodge_credits.png"))
-        image_aspect = self._credits_img.get_height() / self._credits_img.get_width()
-        image_height = self.screen.get_height() * 0.8
-        self._credits_img = pg.transform.smoothscale(self._credits_img, (image_height / image_aspect, image_height))
-
         main_program_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
         # Define the path to the JSON file relative to the script directory
         sw_ag_json = os.path.join(main_program_dir, 'data_no_git', 'sw_ag.json')
