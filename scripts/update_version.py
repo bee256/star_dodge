@@ -1,4 +1,9 @@
+import json
+import os
 import subprocess
+import sys
+from os import path
+
 
 def get_git_commit_info():
     try:
@@ -8,28 +13,46 @@ def get_git_commit_info():
         author_name = subprocess.check_output(['git', 'log', '-1', '--format=%an']).strip().decode('utf-8')
         commit_message = subprocess.check_output(['git', 'log', '-1', '--format=%s']).strip().decode('utf-8')
         is_dirty = subprocess.check_output(['git', 'status', '--porcelain']).strip().decode('utf-8') != ''
-        return commit_hash, commit_date, branch_name, author_name, commit_message, is_dirty
+        commit_data = {
+            'commit': commit_hash,
+            'commit_date': commit_date,
+            'branch': branch_name,
+            'author': author_name,
+            'commit_message': commit_message,
+            'dirty': is_dirty
+        }
+        return commit_data
     except subprocess.CalledProcessError:
-        return None, None, None, None, None, None
+        return None
 
 def update_version_file(version):
-    commit_hash, commit_date, branch_name, author_name, commit_message, is_dirty = get_git_commit_info()
-    with open('utils/version_info.py', 'w') as f:
-        f.write(f'__version__ = "{version}"\n')
-        if commit_hash and commit_date:
-            f.write(f'__commit__ = "{commit_hash}"\n')
-            f.write(f'__commit_date__ = "{commit_date}"\n')
-            f.write(f'__branch__ = "{branch_name}"\n')
-            f.write(f'__author__ = "{author_name}"\n')
-            f.write(f'__commit_message__ = "{commit_message}"\n')
-            f.write(f'__dirty__ = {is_dirty}\n')
-        else:
-            f.write(f'__commit__ = "unknown"\n')
-            f.write(f'__commit_date__ = "unknown"\n')
-            f.write(f'__branch__ = "unknown"\n')
-            f.write(f'__author__ = "unknown"\n')
-            f.write(f'__commit_message__ = "unknown"\n')
-            f.write(f'__dirty__ = False\n')
+    commit_data = get_git_commit_info()
+    if commit_data is None:
+        print("Could not retrieve commit data", file=sys.stderr)
+        sys.exit(1)
+
+    commit_data['version'] = version
+
+    error = None
+    main_program_dir = path.dirname(path.abspath(__file__))
+    base_dir = path.dirname(main_program_dir)
+    os.makedirs(path.join(base_dir, 'data_no_git'), exist_ok=True)
+    file_path = path.join(base_dir, 'data_no_git', 'version_info.json')
+    try:
+        with open(file_path, 'w') as jf:
+            json.dump(commit_data, jf, indent=4)
+    except IOError as e:
+        error = f"File I/O error: {e}"
+    except TypeError as e:
+        error = f"Type error: {e}"
+    except Exception as e:
+        error = f"Unexpected error: {e}"
+
+    if error:
+        print(error, file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Successfully updated version info to {file_path}")
 
 if __name__ == "__main__":
     version = "1.0.0"  # You can update this manually or retrieve it dynamically

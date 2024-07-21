@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import socket
@@ -8,7 +9,7 @@ from os import path
 from enum import Enum
 
 from utils.config import Config
-from utils.paths import dir_images, dir_sound
+from utils.paths import dir_images, dir_sound, dir_data_no_git
 
 
 class Difficulty(Enum):
@@ -104,12 +105,7 @@ class Settings:
                 callback({'rc': 1, 'message': message})
 
     def _load_version_info(self):
-        import importlib.util
-
-        module_name = 'version_info'
-        # version_info.py is expected in same directory as settings.py
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(script_dir, 'version_info.py')
+        file_path = os.path.join(dir_data_no_git, 'version_info.json')
 
         self.app_version = None
         self.git_commit = None
@@ -118,23 +114,16 @@ class Settings:
 
         # Check if the file exists
         if os.path.exists(file_path):
-            spec = importlib.util.spec_from_file_location(module_name, file_path)
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[module_name] = module
-            spec.loader.exec_module(module)
-            if self.verbose:
-                print(f"Module {module_name} loaded successfully.")
+            try:
+                with open(file_path, 'r') as json_file:
+                    data = json.load(json_file)
+            except Exception as e:
+                print(f"Error: {e} when loading {file_path}", file=sys.stderr)
 
-            # Conditionally use variables
-            if hasattr(module, '__version__'):
-                self.app_version = getattr(module, '__version__')
-            if hasattr(module, '__commit__'):
-                self.git_commit = getattr(module, '__commit__')
-            if hasattr(module, '__commit_date__'):
-                self.git_commit_date = getattr(module, '__commit_date__')
-            if hasattr(module, '__branch__'):
-                self.git_branch = getattr(module, '__branch__')
-
+            self.app_version = data.get('version', None)
+            self.git_commit = data.get('commit', None)
+            self.git_commit_date = data.get('commit_date', None)
+            self.git_branch = data.get('branch', None)
         else:
             if self.verbose:
                 print(f"File {file_path} does not exist.")
