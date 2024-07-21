@@ -87,7 +87,7 @@ class CreditsState(State):
         sw_ag_names = None
         try:
             # Read the JSON file
-            with open(sw_ag_json, 'r') as file:
+            with open(sw_ag_json, 'r', encoding='utf-8') as file:
                 sw_ag_names = json.load(file)
         except Exception:
             pass
