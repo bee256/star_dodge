@@ -13,7 +13,7 @@ base_dir = path.dirname(path.abspath(path.dirname(__file__)))
 dir_sound = path.join(base_dir, 'assets', 'sound')
 dir_fonts = path.join(base_dir, 'assets', 'fonts')
 dir_images = path.join(base_dir, 'assets', 'images')
-dir_data_no_git = path.join(base_dir, 'dir_data_no_git')
+dir_data_no_git = path.join(base_dir, 'data_no_git')
 
 
 def get_data_dir():

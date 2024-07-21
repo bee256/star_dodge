@@ -82,7 +82,7 @@ class CreditsState(State):
         # Texte
         self._title = self.title_font.render("CREDITS", True, LIGHT_BLUE)
 
-        sw_ag_json = os.path.join(dir_data_no_git, 'data_no_git', 'sw_ag.json')
+        sw_ag_json = os.path.join(dir_data_no_git, 'sw_ag.json')
 
         sw_ag_names = None
         try:
