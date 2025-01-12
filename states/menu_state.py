@@ -27,6 +27,7 @@ settings: Settings
 class MenuState(State):
     def __init__(self):
         super().__init__()
+        self.screenshot_saved: bool = False
 
         global screen, settings
         settings = Settings()
@@ -328,6 +329,10 @@ class MenuState(State):
 
         if self.game_start_animation:
             screen.blit(self.screen_alpha, (0, 0))
+            # if not self.screenshot_saved:
+            #     pg.image.save(screen, 'screenshot_menu.png')
+            #     self.screenshot_saved = True
+
 
     def draw_ping_message(self):
         if self.ping_score_server_rc == 0:

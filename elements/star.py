@@ -1,5 +1,4 @@
 import pygame as pg
-import random
 
 from utils.colors import *
 from utils.settings import Settings
