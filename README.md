@@ -1,6 +1,6 @@
 # Star Dodge
 
-StarDodge is a simple 2D game. The goal is to navigate a space ship through stars and to avoid collisions. The game was
+Star Dodge is a simple 2D game. The goal is to navigate a space ship through stars and to avoid collisions. The game was
 written in a school course to teach Python programming for pupils starting at the age of 14. It is intended to teach the
 following principles:
 
