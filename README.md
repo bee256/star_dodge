@@ -7,7 +7,7 @@ following principles:
 1. General introduction into Python and the eco system
 2. Object oriented programming. The game uses classes for the ship, stars, and the different game states such as the
    menu and game state (amongst others)
-3. 2D drawing using the Pygame library
+3. 2D drawing using the [Pygame 2D library](https://www.pygame.org)
 4. Game main loop and frame rate
 5. General Python, like handling data structures such as lists, tuples, dictionaries
 6. Asynchronous I/O when working with high score server
@@ -102,6 +102,10 @@ The `scripts` folder contains two scrips to build a stand-alone executable on ma
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+## Credits
+
+See the credits screen when running the game. 😎
 
 ## Related Projects
 - [Star Dodge Steps](https://github.com/bee256/star_dodge_steps)
