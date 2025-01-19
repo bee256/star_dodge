@@ -12,20 +12,22 @@ following principles:
 5. General Python, like handling data structures such as lists, tuples, dictionaries
 6. Asynchronous I/O when working with high score server
 
-The game can optionally work with a high score server, this is where asynchronous I/O is used, see command line options
-and the Github project *Star Dodge Server*.
+The game is controlled by using the keyboard, it does not feature mouse support. Use the arrow and enter
+keys to work with it.
+You can optionally use a highscore server, which uses asynchronous I/O, see command line options
+and the [Star Dodge Score Server](https://github.com/bee256/star_dodge_score_server) Github project.
 
 ## Screenshots
 
-### Main menu
+#### Main menu
 
 ![Main Menu](assets/images/screenshot_menu.png)
 
-### Game right after start
+#### Game right after start
 
 ![Game right after start](assets/images/screenshot_play_start.png)
 
-### Game stage 3 hitting star
+#### Game stage 3 hitting star
 
 ![Game stage 3 hitting start](assets/images/screenshot_stage3.png)
 
@@ -77,3 +79,30 @@ python game.py -w 1000 640  # use 1000x640 pixels as window size
 python game.py -v -sh 127.0.0.1
 python game.py --verbose --window 1600 --score_server_host 127.0.0.1
 ```
+
+## Using the score server host
+
+See the [Star Dodge Score Server](https://github.com/bee256/star_dodge_score_server) project on how to
+setup the score server.
+When using the score server host, the program will connect to a high score server, and will submit the game
+result when the game is over. It will as well pull the
+high scores from the server when the high scores are displayed. The top 20 high scores will be displayed and every
+5 seconds the score server is polled for new results. So when multiple gamers connect to the same high score server
+the best player are visible there. Whenever a new score makes it to the top 20, a sound is being played and the
+score is shown highlighted for 5 seconds.
+
+#### Screenshot of the high score display in server mode
+
+![High score diplay in server mode](assets/images/screenshot_high_scores_server_mode.png)
+
+## Stand-alone executable
+
+The `scripts` folder contains two scrips to build a stand-alone executable on macOS and Windows.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+## Related Projects
+- [Star Dodge Steps](https://github.com/bee256/star_dodge_steps)
+- [Star Dodge Score Server](https://github.com/bee256/star_dodge_score_server)
