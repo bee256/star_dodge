@@ -80,6 +80,8 @@ python game.py -v -sh 127.0.0.1
 python game.py --verbose --window 1600 --score_server_host 127.0.0.1
 ```
 
+The game contains a cheat mode and code, how this works is for the reader to figure out by consulting the source code. 😎
+
 ## Using the score server host
 
 See the [Star Dodge Score Server](https://github.com/bee256/star_dodge_score_server) project on how to
